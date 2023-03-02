@@ -1,3 +1,7 @@
 site
 temp
 *.pyc
+bin
+lib
+include
+pyvenv.cfg

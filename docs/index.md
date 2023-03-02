@@ -19,7 +19,7 @@ The details for where to get each Pokémon can be found between the wild Pokémo
 
 ### Revamped Trainer Battles
 
-The Pokémon rosters of every Trainer in the game has been edited, now including Pokémon from the National Dex. Trainer levels have also been modified to fit the new level curve, which is now higher than before due to bigger Pokémon rosters and greater use of evolved Pokémon awarding larger amounts of EXP. Trainers can now expect their Pokémon to reach the 70s by the Elite Four, instead of the 50s that was the case in the original Platinum. Additionally, all Trainers use the AI that is normally only used by boss Trainers such as the Elite Four.
+The Pokémon rosters of every Trainr in the game has been edited, now including Pokémon from the National Dex. Trainer levels have also been modified to fit the new level curve, which is now higher than before due to bigger Pokémon rosters and greater use of evolved Pokémon awarding larger amounts of EXP. Trainers can now expect their Pokémon to reach the 70s by the Elite Four, instead of the 50s that was the case in the original Platinum. Additionally, all Trainers use the AI that is normally only used by boss Trainers such as the Elite Four.
 
 The details for what each Trainer has can be seen in the Trainer Pokemon document. Please note that this feature is purely for the normal Trainer battles in the game; the Battle Frontier has not been changed.
 

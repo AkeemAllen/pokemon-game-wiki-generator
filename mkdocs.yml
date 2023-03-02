@@ -1,9 +1,9 @@
-site_name: Platinum Renegade Wiki
-site_url: https://fredericdlugi.github.io/platinum-renegade-wiki
-site_description: A fanmade wiki for Platinum Renegade.
-site_author: Frederic Dlugi
+site_name: Blaze Black Wiki
+site_url: https://akeemallen.github.io/blaze-black-wiki
+site_description: A fanmade wiki for Blaze Black.
+site_author: Akeem Allen
 
-repo_url: https://github.com/FredericDlugi/platinum-renegade-wiki/
+repo_url: https://github.com/AkeemAllen/blaze-black-wiki/
 
 theme:
     palette:
