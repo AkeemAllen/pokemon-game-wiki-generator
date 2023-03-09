@@ -15,11 +15,12 @@ def create_encounter_table(id, pokemon_locations):
     else:
         return []
 
+
 def extract_all_wild_pokemons():
     paths = glob.glob(path)
+    # paths = ["docs/wild_pokemon/canalave_city.md"]
 
     pokemon_locations = {}
-
 
     for p in tqdm.tqdm(paths):
         pl = _extract_from_file(p)
@@ -31,16 +32,19 @@ def extract_all_wild_pokemons():
 
     return pokemon_locations
 
+
 def _extract_from_file(p):
+    # p = "docs/wild_pokemon/canalave_city.md"
     pl = []
     with open(p, "r", encoding="utf-8") as f:
         route = f.readline().replace("#", "").strip()
         i = 0
+        # we ignore files that start with 'Area'
         while not f.readline().startswith("Area"):
             i += 1
             if i == 100:
                 return []
-        f.readline() # read --- line
+        f.readline()  # read --- line
 
         l = f.readline().strip()
         while l != "":
@@ -49,7 +53,7 @@ def _extract_from_file(p):
             line = [a.strip() for a in line]
 
             t = line[0].split("<br>")
-            if t[0] !=  "&nbsp;":
+            if t[0] != "&nbsp;":
                 method = " ".join(t[:2])
                 level = t[2].strip()
 
@@ -60,13 +64,12 @@ def _extract_from_file(p):
                 id_ = po[0][4:7]
                 chance = po[2]
 
-
                 pl += [(id_, route, method, chance, level)]
-
 
             l = f.readline().strip()
 
     return pl
+
 
 if __name__ == "__main__":
     pokemon_locations = extract_all_wild_pokemons()

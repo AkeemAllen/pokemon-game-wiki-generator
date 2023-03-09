@@ -1,11 +1,12 @@
-# General Changes
+* Recall that no shaking grass will appear until after the first badge has been obtained!
 
-- The Wild Pokémon in each area have been modified.
-- The levels listed for an area are the minimum and maximum levels that you may encounter in that area.
-- Please note that many Pokémon can only be encountered at one specific level. Only some have the range.
-- Fishing rod encounters have fixed levels. The Old Rod is Lv. 10, the Good Rod is Lv. 25 and the Super Rod is Lv. 50.
-- The Old Rod and Good Rod are obtainable from the same places as before. The Super Rod is obtainable in Snowpoint City.
-- Honey trees now respond with an encounter straight away after applying Honey.
-- Please note that the shiny rate for Pokémon is 1/512 unless you chose to use the normal rate patch.
-- Some Pokémon are only found when using the Poké Radar (these are listed as Poké Radar). These Pokémon may show up when you enter the patches with the yellow sparkles (NOT the shiny sparkles, that's something else!)
+* 'Special' refers to the rare spots. Doubles refers to tall grass where double battles can occur.
+Unless otherwise stated, fishing encounters have not been edited.
 
+* Thanks go to Serebii.net for the images.
+
+* You won’t be able to get all 649 in the wild alone, but evolution will make it possible! You get enough evolution stones during the course of the game for everybody, so don’t fret.
+
+* Note that there are several sections with a “Legendary Encounter.” The legendary is a normal Wild Pokémon, just very rare. Obviously the total encounter chance can’t be 101-102%, but the Pokemon whose chance is lessened as a result is not listed. Usually, it’s just the last one in the list, so a 10% might become an 8%, a 5% might become a 4% etcetera. Although it’s somewhat untidy, this is the best method that can be done for now, due to scripting being impossible as of August 2011.
+
+* There are a couple of differences between Blaze Black and Volt White. Namely, Blaze Black will find Zekrom, Thundurus and the pink Shellos/Gastrodon wild, as well as Red Basculin only. Volt White instead get Reshiram, Tornadus and the blue Shellos/Gastrodon wild, and Blue Basculin only. The opposites of each legendary are catchable as per usual in their regular places.
