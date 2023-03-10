@@ -69,6 +69,23 @@ def download_pokemon_sprites():
             pokemon_image_sprite_file.close()
 
 
+def prepare_technical_and_hidden_machines_data():
+    machine_range = range(1, 916)
+    for machine_id in tqdm.tqdm(machine_range):
+
+        if isfile(f"temp/machines/{machine_id}.json"):
+            continue
+
+        response = requests.get(f"https://pokeapi.co/api/v2/machine/{machine_id}")
+
+        if response == "Not Found":
+            continue
+
+        fh = open(f"temp/machine/{machine_id}.json", "wb")
+        fh.write(response.content)
+        fh.close()
+
+
 if __name__ == "__main__":
     if "--pokemon" in sys.argv:
         prepare_pokemon_data()
