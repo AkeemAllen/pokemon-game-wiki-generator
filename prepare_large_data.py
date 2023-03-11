@@ -70,20 +70,33 @@ def download_pokemon_sprites():
 
 
 def prepare_technical_and_hidden_machines_data():
-    machine_range = range(1, 916)
+    machine_range = range(1, 1689)
+    machines = {}
     for machine_id in tqdm.tqdm(machine_range):
-
-        if isfile(f"temp/machines/{machine_id}.json"):
-            continue
 
         response = requests.get(f"https://pokeapi.co/api/v2/machine/{machine_id}")
 
         if response == "Not Found":
             continue
 
-        fh = open(f"temp/machine/{machine_id}.json", "wb")
-        fh.write(response.content)
-        fh.close()
+        machine_data = response.json()
+        machine_name = machine_data["move"]["name"]
+
+        if machine_name not in machines:
+            machines[machine_name] = []
+
+        machines[machine_data["move"]["name"]].append({
+            "technical_name": machine_data["item"]["name"],
+            "game_version": machine_data["version_group"]["name"]
+        })
+    # Might be a better idea to append each new machine to the file
+    # rather downloading all at once and then storing in file
+    # That approach would likely be more tolerant of any faults that
+    # may arise on the network side
+    with open(f"temp/machines.json", "w") as machine_data_file:
+        machine_data_file.write(json.dumps(machines))
+        machine_data_file.close()
+    print(machines)
 
 
 if __name__ == "__main__":
@@ -93,4 +106,6 @@ if __name__ == "__main__":
         download_pokemon_sprites()
     if "--moves" in sys.argv:
         prepare_move_data()
+    if "--machines" in sys.argv:
+        prepare_technical_and_hidden_machines_data()
 

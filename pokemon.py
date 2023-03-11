@@ -62,6 +62,22 @@ def get_markdown_file_name(pokedex_number):
     return file_name
 
 
+def generate_moves_array(moves, table_type):
+    table_array_for_moves = []
+    for move_name, move_attributes in moves.items():
+        move_array = [
+            move_attributes.get("level_learned" if table_type == "level_up" else "machine"),
+            move_name.title(),
+            move_attributes.get("power") if move_attributes.get("power") else "-",
+            f"{move_attributes.get('accuracy')}%" if move_attributes.get("accuracy") else "-",
+            move_attributes.get("pp") if move_attributes.get("pp") else "-",
+            f"{get_markdown_image_for_type(move_attributes.get('type'))}",
+            f"{get_markdown_image_for_type(move_attributes.get('damage_class'))}",
+        ]
+        table_array_for_moves.append(move_array)
+    return table_array_for_moves
+
+
 class Pokemon:
     def __init__(self, dex_number):
         self.pokemon_data = None
@@ -180,33 +196,33 @@ class Pokemon:
     def create_level_up_moves_table(self, doc: Document, version_group: str):
         data = self.pokemon_data
         moves = {}
-        desired_version = pokemon_versions_ordered[PokemonVersions(version_group)]
 
-        # Todo: consider past values that might relate to the current pokemon version
-        #  eg. tackle's accuracy was 95 in black and white, now 100 in more modern games
         for move in data["moves"]:
-            level_learned = ""
             group_details = move["version_group_details"]
             if group_details[0]["move_learn_method"]["name"] != "level-up":
-                continue
-
-            for version in reversed(range(desired_version + 1)):
-                for detail in group_details:
-                    version_name = [k for k, v in pokemon_versions_ordered.items() if v == version][0]
-                    if detail["version_group"]["name"] == version_name.value:
-                        level_learned = detail["level_learned_at"]
-                        break
-
-                if level_learned != "" and level_learned != 0:
-                    break
-
-            if level_learned == "":
                 continue
 
             move_id = move["move"]["url"].split("/")[-2]
             with open(f"temp/moves/{move_id}.json", encoding='utf-8') as move_details_file:
                 move_details = json.load(move_details_file)
                 move_details_file.close()
+
+            level_learned = ""
+            for detail in group_details:
+                if detail["version_group"]["name"] == version_group:
+                    level_learned = detail["level_learned_at"]
+                    relevant_past_value = [
+                        value for value in move_details["past_values"] if value["version_group"]["name"] == version_group
+                    ]
+                    if len(relevant_past_value) > 0:
+                        move_details["accuracy"] = relevant_past_value[0]["accuracy"] or move_details["accuracy"]
+                        move_details["power"] = relevant_past_value[0]["power"] or move_details["power"]
+                        move_details["pp"] = relevant_past_value[0]["power"] or move_details["pp"]
+                        move_details["type"] = relevant_past_value[0]["type"] or move_details["type"]
+                    break
+
+            if level_learned == "" or level_learned == 0:
+                continue
 
             moves[move["move"]["name"]] = {
                 "level_learned": level_learned,
@@ -219,53 +235,44 @@ class Pokemon:
 
         sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["level_learned"], reverse=False))
 
-        table_array_for_moves = []
-        for move_name, move_attributes in sorted_moves.items():
-            move_array = [
-                move_attributes.get("level_learned"),
-                move_name.title(),
-                move_attributes.get("power") if move_attributes.get("power") else "-",
-                f"{move_attributes.get('accuracy')}%" if move_attributes.get("accuracy") else "-",
-                move_attributes.get("pp") if move_attributes.get("pp") else "-",
-                f"{get_markdown_image_for_type(move_attributes.get('type'))}",
-                f"{get_markdown_image_for_type(move_attributes.get('damage_class'))}",
-            ]
-            table_array_for_moves.append(move_array)
-
         doc.add_header("Level Up Moves", 2)
         doc.add_table(
             ["Level", "Name", "Power", "Accuracy", "PP", "Type", "Damage Class"],
-            table_array_for_moves
+            generate_moves_array(sorted_moves, table_type="level_up")
         )
 
     def create_learnable_moves(self, doc: Document, version_group: str):
         data = self.pokemon_data
         moves = {}
-        desired_version = pokemon_versions_ordered[PokemonVersions(version_group)]
+
+        with open("temp/machines.json", encoding='utf-8') as machines_file:
+            machines = json.load(machines_file)
+            machines_file.close()
 
         for move in data["moves"]:
-            learnt_by_machine = False
-            group_details = move["version_group_details"]
-            for detail in group_details:
-                if detail["move_learn_method"]["name"] == "machine":
-                    learnt_by_machine = True
-                    continue
+            if move["move"]["name"] not in machines:
+                continue
 
-            if not learnt_by_machine:
+            group_details = move["version_group_details"]
+            if group_details[0]["move_learn_method"]["name"] != "machine":
                 continue
 
             move_id = move["move"]["url"].split("/")[-2]
             with open(f"temp/moves/{move_id}.json", encoding='utf-8') as move_details_file:
                 move_details = json.load(move_details_file)
                 move_details_file.close()
-                # for version in reversed(range(desired_version)):
-                #     version_name = [k for k, v in pokemon_versions_ordered.items() if v == version][0]
-                #     if detail["version_group"]["name"] == version_name.value:
-                #         level_learned = detail["level_learned_at"]
-                #         break
+
+            machine_name = ""
+            for machine_version in machines[move["move"]["name"]]:
+                if machine_version["game_version"] == version_group:
+                    machine_name = machine_version["technical_name"]
+                    break
+
+            if machine_name == "":
+                continue
 
             moves[move["move"]["name"]] = {
-                "machine": "",
+                "machine": machine_name.upper(),
                 "power": move_details["power"],
                 "type": move_details["type"]["name"],
                 "accuracy": move_details["accuracy"],
@@ -273,25 +280,12 @@ class Pokemon:
                 "damage_class": move_details["damage_class"]["name"],
             }
 
-        # sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["pp"], reverse=False))
+        sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["machine"], reverse=False))
 
-        table_array_for_moves = []
-        for move_name, move_attributes in moves.items():
-            move_array = [
-                move_attributes.get("machine"),
-                move_name.title(),
-                move_attributes.get("power") if move_attributes.get("power") else "-",
-                f"{move_attributes.get('accuracy')}%" if move_attributes.get("accuracy") else "-",
-                move_attributes.get("pp") if move_attributes.get("pp") else "-",
-                f"{get_markdown_image_for_type(move_attributes.get('type'))}",
-                f"{get_markdown_image_for_type(move_attributes.get('damage_class'))}",
-            ]
-            table_array_for_moves.append(move_array)
-
-        doc.add_header("Learnable", 2)
+        doc.add_header("Learnable Moves", 2)
         doc.add_table(
             ["Machine", "Name", "Power", "Accuracy", "PP", "Type", "Damage Class"],
-            table_array_for_moves
+            generate_moves_array(sorted_moves, table_type="learnable")
         )
 
 
@@ -315,7 +309,7 @@ def main():
         pokemon.create_ability_table(doc)
         pokemon.create_stats_table(doc)
         pokemon.create_level_up_moves_table(doc, version_group="black-white")
-        # pokemon.create_learnable_moves(doc, version_group="black-white")
+        pokemon.create_learnable_moves(doc, version_group="black-white")
 
         doc.output_page(markdown_file_path)
 
