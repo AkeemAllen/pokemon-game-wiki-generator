@@ -201,34 +201,27 @@ class Pokemon:
         moves = {}
 
         for move in data["moves"]:
-            group_details = move["version_group_details"]
-            if group_details[0]["move_learn_method"]["name"] != "level-up":
-                continue
+            (move_name, move_values) = [(key, value) for key, value in move.items()][0]
 
-            move_id = move["move"]["url"].split("/")[-2]
-            with open(f"temp/moves/{move_id}.json", encoding='utf-8') as move_details_file:
+            if move_values["learn_method"] != "level-up":
+                continue
+            if move_values["level_learned_at"] == 0:
+                continue
+            with open(f"temp/moves/{move_values['id']}.json", encoding='utf-8') as move_details_file:
                 move_details = json.load(move_details_file)
                 move_details_file.close()
 
-            level_learned = ""
-            for detail in group_details:
-                if detail["version_group"]["name"] == version_group:
-                    level_learned = detail["level_learned_at"]
-                    relevant_past_value = [
-                        value for value in move_details["past_values"] if value["version_group"]["name"] == version_group
-                    ]
-                    if len(relevant_past_value) > 0:
-                        move_details["accuracy"] = relevant_past_value[0]["accuracy"] or move_details["accuracy"]
-                        move_details["power"] = relevant_past_value[0]["power"] or move_details["power"]
-                        move_details["pp"] = relevant_past_value[0]["power"] or move_details["pp"]
-                        move_details["type"] = relevant_past_value[0]["type"] or move_details["type"]
-                    break
+            relevant_past_value = [
+                value for value in move_details["past_values"] if value["version_group"]["name"] == version_group
+            ]
+            if len(relevant_past_value) > 0:
+                move_details["accuracy"] = relevant_past_value[0]["accuracy"] or move_details["accuracy"]
+                move_details["power"] = relevant_past_value[0]["power"] or move_details["power"]
+                move_details["pp"] = relevant_past_value[0]["power"] or move_details["pp"]
+                move_details["type"] = relevant_past_value[0]["type"] or move_details["type"]
 
-            if level_learned == "" or level_learned == 0:
-                continue
-
-            moves[move["move"]["name"]] = {
-                "level_learned": level_learned,
+            moves[move_name] = {
+                "level_learned": move_values["level_learned_at"],
                 "power": move_details["power"],
                 "type": move_details["type"]["name"],
                 "accuracy": move_details["accuracy"],
@@ -253,20 +246,19 @@ class Pokemon:
             machines_file.close()
 
         for move in data["moves"]:
-            if move["move"]["name"] not in machines:
+            (move_name, move_values) = [(key, value) for key, value in move.items()][0]
+
+            if move_name not in machines:
+                continue
+            if move_values["learn_method"] != "machine":
                 continue
 
-            group_details = move["version_group_details"]
-            if group_details[0]["move_learn_method"]["name"] != "machine":
-                continue
-
-            move_id = move["move"]["url"].split("/")[-2]
-            with open(f"temp/moves/{move_id}.json", encoding='utf-8') as move_details_file:
+            with open(f"temp/moves/{move_values['id']}.json", encoding='utf-8') as move_details_file:
                 move_details = json.load(move_details_file)
                 move_details_file.close()
 
             machine_name = ""
-            for machine_version in machines[move["move"]["name"]]:
+            for machine_version in machines[move_name]:
                 if machine_version["game_version"] == version_group:
                     machine_name = machine_version["technical_name"]
                     break
@@ -274,7 +266,7 @@ class Pokemon:
             if machine_name == "":
                 continue
 
-            moves[move["move"]["name"]] = {
+            moves[move_name] = {
                 "machine": machine_name.upper(),
                 "power": move_details["power"],
                 "type": move_details["type"]["name"],

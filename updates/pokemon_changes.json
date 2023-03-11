@@ -8,9 +8,18 @@
       "special-attack": 1,
       "special-defense": 2
     },
-    "level_up_moves": {
-      "water-gun": 3
-    },
-    "abilities": ["Compound-Eyes"]
+    "types": ["grass", "water"],
+    "abilities": ["Compound-Eyes", "Simet"],
+    "moves": {
+      "learnt_by_level_up": {
+        "new_moves": {
+          "water-gun": 3
+        },
+        "updated_moves": {
+          "leech-seed": 20
+        }
+      },
+      "learnt_by_machine": ["flamethrower"]
+    }
   }
 }
