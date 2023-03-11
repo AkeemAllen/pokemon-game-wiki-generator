@@ -35,20 +35,35 @@ def prepare_move_data():
 
 
 def prepare_pokemon_data():
-    pokedex_numbers = range(1, 650)
+    pokedex_numbers = range(1, 2)
+
+    with open("updates/pokemon_changes.json", encoding="utf-8") as pokemon_changes_file:
+        pokemon_changes = json.load(pokemon_changes_file)
+        pokemon_changes_file.close()
+
     for dex_number in tqdm.tqdm(pokedex_numbers):
 
-        if isfile(f"temp/pokemon/{dex_number}.json"):
-            continue
+        # if isfile(f"temp/pokemon/{dex_number}.json"):
+        #     continue
 
         response = requests.get(f"https://pokeapi.co/api/v2/pokemon/{dex_number}")
 
         if response == "Not Found":
             continue
 
-        fh = open(f"temp/pokemon/{dex_number}.json", "wb")
-        fh.write(response.content)
-        fh.close()
+        pokemon_data = response.json()
+        if pokemon_data["name"] not in pokemon_changes:
+            continue
+
+        if "stats" in pokemon_changes[pokemon_data["name"]]:
+            for stat in pokemon_data["stats"]:
+                stat_name = stat["stat"]["name"]
+                updates = pokemon_changes[pokemon_data["name"]]
+                stat["base_stat"] = updates["stats"][stat_name] if stat_name in updates["stats"] else stat["base_stat"]
+
+        # fh = open(f"temp/pokemon/{dex_number}.json", "wb")
+        # fh.write(response.content)
+        # fh.close()
 
 
 def download_pokemon_sprites():

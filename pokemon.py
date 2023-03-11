@@ -117,7 +117,6 @@ class Pokemon:
         query_string = f"{types[0]}+{types[1]}" if len(types) > 1 else f"{types[0]}"
 
         response = requests.get(f"http://localhost:3000?types={query_string}").json()
-        # print(response)
         immunities = ""
         normal_resists = ""
         two_weak_resists = ""
@@ -175,12 +174,14 @@ class Pokemon:
         data = self.pokemon_data
         stats = {}
 
+        base_stat_total = 0
         for stat in data["stats"]:
             stats[stat["stat"]["name"]] = stat["base_stat"]
+            base_stat_total += stat["base_stat"]
 
         doc.add_header("Base Stats", 2)
         doc.add_table(
-            ["Version", "HP", "Atk", "Def", "SAtk", "SDef", "Spd"],
+            ["Version", "HP", "Atk", "Def", "SAtk", "SDef", "Spd", "BST"],
             [
                 [
                     "All",
@@ -189,7 +190,9 @@ class Pokemon:
                     stats.get("defense"),
                     stats.get("special-attack"),
                     stats.get("special-defense"),
-                    stats.get("speed")]
+                    stats.get("speed"),
+                    base_stat_total
+                ]
             ]
         )
 

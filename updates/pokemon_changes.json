@@ -1,0 +1,16 @@
+{
+  "bulbasaur": {
+    "stats": {
+      "hp": 60,
+      "speed": 100,
+      "attack": 11000,
+      "defense": 200,
+      "special-attack": 1,
+      "special-defense": 2
+    },
+    "level_up_moves": {
+      "water-gun": 3
+    },
+    "abilities": ["Compound-Eyes"]
+  }
+}
