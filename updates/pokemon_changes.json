@@ -21,5 +21,439 @@
       },
       "learnt_by_machine": ["flamethrower"]
     }
+  },
+  "venusaur": {
+    "moves": {
+      "learnt_by_machine": ["sludge-wave"]
+    }
+  },
+  "squirtle": {
+    "abilities": ["torrent", "sturdy"]
+  },
+  "wartortle": {
+    "abilities": ["torrent", "sturdy"]
+  },
+  "blastoise": {
+    "abilities": ["torrent", "sturdy"]
+  },
+  "carterpie": {
+    "abilities": ["shield dust", "suction cups"]
+  },
+  "metapod": {
+    "abilities": ["shed skin", "battle armor"]
+  },
+  "butterfree": {
+    "stats": {
+      "special-attack": 95,
+      "speed": 90
+    },
+    "abilities": ["compound-eyes", "tinted lens"]
+  },
+  "weedle": {
+    "abilities": ["shield dust", "poison touch"]
+  },
+  "kakuna": {
+    "abilities": ["shed skin", "battle armor"]
+  },
+  "beedrill": {
+    "stats": {
+      "attack": 95,
+      "speed": 95
+    },
+    "abilities": ["sniper", "poison touch"]
+  },
+  "pidgey": {
+    "moves": {
+      "learnt_by_machine": ["acrobatics"]
+    },
+    "abilities": ["big pecks", "tangled feet"]
+  },
+  "pidgeotto": {
+    "moves": {
+      "learnt_by_machine": ["acrobatics"]
+    },
+    "abilities": ["big pecks", "tangled feet"]
+  },
+  "pidgeot": {
+    "stats": {
+      "hp": 105,
+      "attack": 90,
+      "defense": 85,
+      "special-defense": 80
+    },
+    "moves": {
+      "learnt_by_machine": ["acrobatics"]
+    },
+    "abilities": ["big pecks", "tangled feet"]
+  },
+  "rattata": {
+    "moves": {
+      "learnt_by_machine": ["hone-claws"]
+    },
+    "abilities": ["hustle", "guts"]
+  },
+  "raticate": {
+    "stats": {
+      "hp": 60,
+      "attack": 87,
+      "speed": 109
+    },
+    "moves": {
+      "learnt_by_machine": ["hone-claws"]
+    },
+    "abilities": ["hustle", "guts"]
+  },
+  "spearow": {
+    "abilities": ["keen eye", "sniper"]
+  },
+  "fearow": {
+    "stats": {
+      "attack": 100
+    },
+    "abilities": ["keen eye", "sniper"]
+  },
+  "ekans": {
+    "abilities": ["intimidate", "shed skin"]
+  },
+  "arbok": {
+    "abilities": ["intimidate", "shed skin"]
+  },
+  "pikachu": {
+    "stats": {
+      "attack": 80,
+      "speed": 110,
+      "special-attack": 85
+    },
+    "moves": {
+      "learnt_by_machine": ["surf"]
+    },
+    "abilities": ["static", "lightning rod"]
+  },
+  "raichu": {
+    "stats": {
+      "attack": 100,
+      "speed": 120,
+      "special-attack": 100,
+      "special-defense": 90
+    },
+    "moves": {
+      "learnt_by_machine": ["surf"]
+    },
+    "abilities": ["static", "lightning rod"]
+  },
+  "sandshrew": {
+    "abilities": ["sand veil", "sand rush"]
+  },
+  "sandslash": {
+    "abilities": ["sand veil", "sand rush"]
+  },
+  "nidoran-f": {
+    "abilities": ["poison point", "rivalry"]
+  },
+  "nidorina": {
+    "abilities": ["hustle", "rivalry"]
+  },
+  "nidoqueen": {
+    "stats": {
+      "attack": 92,
+      "special-attack": 90
+    },
+    "abilities": ["sheer force", "rivalry"]
+  },
+  "nidoran-m": {
+    "abilities": ["poison point", "rivalry"]
+  },
+  "nidorino": {
+    "abilities": ["hustle", "rivalry"]
+  },
+  "nidoking": {
+    "stats": {
+      "attack": 102,
+      "special-attack": 95
+    },
+    "abilities": ["sheer force", "rivalry"]
+  },
+  "clefairy": {
+    "abilities": ["cute charm", "magic guard"]
+  },
+  "clefable": {
+    "stats": {
+      "hp": 105,
+      "special-attack": 93,
+      "special-defense": 100
+    },
+    "abilities": ["unaware", "magic guard"]
+  },
+  "vulpix": {
+    "abilities": ["flash fire", "drought"]
+  },
+  "ninetales": {
+    "abilities": ["flash fire", "drought"]
+  },
+  "jigglypuff": {
+    "stats": {
+      "hp": 128,
+      "attack": 65,
+      "special-attack": 65
+    },
+    "abilities": ["cute charm", "friend guard"]
+  },
+  "wigglytuff": {
+    "stats": {
+      "attack": 83,
+      "defense": 60,
+      "special-attack": 95,
+      "special-defense": 80
+    },
+    "abilities": ["cute charm", "frisk"]
+  },
+  "zubat": {
+    "abilities": ["inner focus", "infiltrator"]
+  },
+  "golbat": {
+    "abilities": ["inner focus", "infiltrator"]
+  },
+  "oddish": {
+    "abilities": ["chlorophyll", "run away"]
+  },
+  "gloom": {
+    "abilities": ["chlorophyll", "stench"]
+  },
+  "vileplume": {
+    "stats": {
+      "hp": 75,
+      "special-attack": 110,
+      "special-defense": 100
+    },
+   "abilities": ["chlorophyll", "effect spore"]
+  },
+  "paras": {
+    "abilities": ["effect spore", "dry skin"]
+  },
+  "parasect": {
+    "stats": {
+      "hp": 60,
+      "attack": 110,
+      "defense": 100,
+      "special-defense": 90,
+      "speed": 40
+    },
+    "abilities": ["effect spore", "dry skin"]
+  },
+  "venonat": {
+    "abilities": ["compound eyes", "tinted lens"]
+  },
+  "venomoth": {
+    "stats": {
+      "special-attack": 100,
+      "speed": 90
+    },
+    "abilities": ["compound eyes", "tinted lens"]
+  },
+  "diglett": {
+    "abilities": ["sand force", "arena trap"]
+  },
+  "dugtrio": {
+    "stats": {
+      "attack": 105
+    },
+    "abilities": ["sand force", "arena trap"]
+  },
+  "meowth": {
+    "abilities": ["pick up", "technician"]
+  },
+  "persian": {
+    "stats": {
+      "special-attack": 85
+    },
+    "abilities": ["limber", "technician"]
+  },
+  "psyduck": {
+    "abilities": ["swift swim", "cloud nine"]
+  },
+  "golduck": {
+    "abilities": ["swift swim", "cloud nine"]
+  },
+  "mankey": {
+    "abilities": ["defiant", "anger point"]
+  },
+  "primeape": {
+    "stats": {
+      "attack": 115,
+      "speed": 110
+    },
+    "abilities": ["defiant", "anger point"]
+  },
+  "growlithe": {
+    "abilities": ["intimidate", "justified"]
+  },
+  "arcanine": {
+    "abilities": ["intimidate", "justified"]
+  },
+  "poliwag": {
+    "abilities": ["water absorb", "swift swim"]
+  },
+  "poliwhirl": {
+    "evolution": [],
+    "abilities": ["water absorb", "swift swim"]
+  },
+  "abra": {
+    "abilities": ["synchronize", "magic guard"]
+  },
+  "kadabra": {
+    "evolution": [],
+    "abilities": ["synchronize", "magic guard"]
+  },
+  "alakazam": {
+    "abilities": ["synchronize", "magic guard"]
+  },
+  "machop": {
+    "abilities": ["guts", "no guard"]
+  },
+  "machoke": {
+    "evolution": [],
+    "abilities": ["guts", "no guard"]
+  },
+  "machamp": {
+    "abilities": ["guts", "no guard"]
+  },
+  "bellsprout": {
+    "abilities": ["chlorophyll", "limber"]
+  },
+  "weepinbell": {
+    "abilities": ["chlorophyll", "gluttony"]
+  },
+  "victreebel": {
+    "stats": {
+      "hp": 90,
+      "attack": 115,
+      "speed": 80
+    },
+    "abilities": ["chlorophyll", "intimidate"]
+  },
+  "tentacool": {
+    "abilities": ["clear body", "liquid ooze"]
+  },
+  "tentaruel": {
+    "abilities": ["clear body", "liquid ooze"]
+  },
+  "geodude": {
+    "abilities": ["rock head", "sturdy"]
+  },
+  "graveler": {
+    "evolution": [],
+    "abilities": ["rock head", "sturdy"]
+  },
+  "golem": {
+    "evolution": [],
+    "abilities": ["rock head", "sturdy"]
+  },
+  "ponyta": {
+    "abilities": ["flame body", "flash fire"]
+  },
+  "rapidash": {
+    "abilities": ["flame body", "flash fire"]
+  },
+  "slowpoke": {
+    "evolution": [],
+    "abilities": ["regenerator", "drizzle"]
+  },
+  "slowbro": {
+    "abilities": ["regenerator", "drizzle"]
+  },
+  "magnemite": {
+    "abilities": ["magnet pull", "analytic"]
+  },
+  "magneton": {
+    "abilities": ["magnet pull", "analytic"]
+  },
+  "farfetchd": {
+    "stats": {
+      "hp": 70,
+      "attack": 105,
+      "defense": 70,
+      "special-attack": 50,
+      "special-defense": 70,
+      "speed": 110
+    },
+    "types": ["fighting", "flying"],
+    "abilities": ["defiant", "super luck"]
+  },
+  "duduo": {
+    "abilities": ["tangled feet", "early bird"]
+  },
+  "dodrio": {
+    "abilities": ["anger point", "early bird"]
+  },
+  "seal": {
+    "abilities": ["thick fat", "hydration"]
+  },
+  "dewgong": {
+    "stats": {
+      "special-attack": 85
+    },
+    "abilities": ["thick fat", "hydration"]
+  },
+  "grimer": {
+    "abilities": ["stench", "poison touch"]
+  },
+  "muk": {
+    "abilities": ["stench", "poison touch"]
+  },
+  "shellder": {
+    "abilities": ["overcoat", "skill link"]
+  },
+  "cloyster": {
+    "abilities": ["overcoat", "skill link"]
+  },
+  "gastly": {
+    "moves": {
+      "learnt_by_machine": ["sludge-wave"]
+    },
+    "abilities": ["levitate"]
+  },
+  "haunter": {
+    "evolution": [],
+    "moves": {
+      "learnt_by_machine": ["sludge-wave"]
+    },
+    "abilities": ["levitate"]
+  },
+  "gengar": {
+    "moves": {
+      "learnt_by_machine": ["sludge-wave"]
+    },
+    "abilities": ["levitate"]
+  },
+  "onix": {
+    "evolution": [],
+    "stats": {
+      "attack": 70
+    },
+    "abilities": ["weak armor", "sturdy"]
+  },
+  "drowzee": {
+    "abilities": ["insomnia", "forewarn"]
+  },
+  "hypno": {
+    "abilities": ["insomnia", "forewarn"]
+  },
+  "krabby": {
+    "moves": {
+      "learnt_by_machine": ["waterfall"]
+    },
+    "abilities": ["hyper cutter", "sheer force"]
+  },
+  "kingler": {
+    "moves": {
+      "learnt_by_machine": ["waterfall"]
+    },
+    "abilities": ["hyper cutter", "sheer force"]
+  },
+  "voltorb": {
+    "abilities": ["aftermath", "static"]
+  },
+  "electrode": {
+    "abilities": ["aftermath", "static"]
   }
 }

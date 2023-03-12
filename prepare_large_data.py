@@ -26,10 +26,13 @@ def update_pokemon_data(pokemon_data, pokemon_updates, moves):
                 "base_stat"]
 
     if "abilities" in pokemon_updates:
-        pokemon_data["abilities"] = [{"ability": {"name": update}} for update in pokemon_updates["abilities"]]
+        pokemon_data["abilities"] = [{"ability": {"name": update.title()}} for update in pokemon_updates["abilities"]]
 
     if "types" in pokemon_updates:
         pokemon_data["types"] = [{"type": {"name": update}} for update in pokemon_updates["types"]]
+
+    if "evolution" in pokemon_updates:
+        pokemon_data["evolution"]
 
     for index, move in enumerate(pokemon_data["moves"]):
         move_name = move["move"]["name"]
@@ -87,7 +90,7 @@ def prepare_move_data():
 
 
 def prepare_pokemon_data():
-    pokedex_numbers = range(1, 5)
+    pokedex_numbers = range(1, 650)
 
     with open("updates/pokemon_changes.json", encoding="utf-8") as pokemon_changes_file:
         pokemon_changes = json.load(pokemon_changes_file)
