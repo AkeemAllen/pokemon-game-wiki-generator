@@ -32,7 +32,10 @@ def update_pokemon_data(pokemon_data, pokemon_updates, moves):
         pokemon_data["types"] = [{"type": {"name": update}} for update in pokemon_updates["types"]]
 
     if "evolution" in pokemon_updates:
-        pokemon_data["evolution"]
+        pokemon_data["evolution"] = pokemon_updates["evolution"]
+
+    if "moves" not in pokemon_updates:
+        return
 
     for index, move in enumerate(pokemon_data["moves"]):
         move_name = move["move"]["name"]
@@ -50,7 +53,7 @@ def update_pokemon_data(pokemon_data, pokemon_updates, moves):
         }
         moves.append(updated_move_structure)
 
-    machine_move_changes = pokemon_updates["moves"]["learnt_by_machine"]
+    machine_move_changes = pokemon_updates["moves"]["learnt_by_machine"] if "learnt_by_machine" in pokemon_updates["moves"] else []
     for machine in machine_move_changes:
         response = requests.get(f"https://pokeapi.co/api/v2/move/{machine}")
         moves.append({
@@ -60,7 +63,10 @@ def update_pokemon_data(pokemon_data, pokemon_updates, moves):
             }
         })
 
-    new_level_up_moves = pokemon_updates["moves"]["learnt_by_level_up"]["new_moves"]
+    new_level_up_moves = []
+    if "learnt_by_level_up" in pokemon_updates["moves"] and "new_moves" in pokemon_updates["moves"]["learnt_by_level_up"]:
+        new_level_up_moves = pokemon_updates["moves"]["learnt_by_level_up"]["new_moves"]
+
     for move in new_level_up_moves:
         response = requests.get(f"https://pokeapi.co/api/v2/move/{move}")
         moves.append({
@@ -134,13 +140,12 @@ def prepare_pokemon_data():
         if pokemon_data["name"] in pokemon_changes:
             pokemon_updates = pokemon_changes[pokemon_data["name"]]
             update_pokemon_data(pokemon_data, pokemon_updates, moves)
+            print(f"{pokemon_data['name']} updated")
 
         pokemon_data["moves"] = moves
         with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
             pokemon_file.write(json.dumps(pokemon_data))
             pokemon_file.close()
-        # json.dump(pokemon_data, fh)
-        # fh.close()
 
 
 def download_pokemon_sprites():

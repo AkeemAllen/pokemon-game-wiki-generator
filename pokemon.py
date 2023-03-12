@@ -196,6 +196,15 @@ class Pokemon:
             ]
         )
 
+    def create_evolution_note(self, doc: Document):
+        data = self.pokemon_data
+
+        if "evolution" not in data:
+            return
+
+        doc.add_header("Evolution Change", 2)
+        doc.add_paragraph(data["evolution"])
+
     def create_level_up_moves_table(self, doc: Document, version_group: str):
         data = self.pokemon_data
         moves = {}
@@ -285,7 +294,10 @@ class Pokemon:
 
 
 def main():
-    pokemon_range = range(1, 20)
+    pokemon_range = range(1, 101)
+
+    navigation_items_file = open("temp/new_navigation_items.txt", 'w')
+
     for pokedex_number in tqdm.tqdm(pokemon_range):
         pokemon = Pokemon(pokedex_number)
         pokemon_data = pokemon.get_pokemon_data()
@@ -303,17 +315,18 @@ def main():
         pokemon.create_defenses_table(doc)
         pokemon.create_ability_table(doc)
         pokemon.create_stats_table(doc)
+        pokemon.create_evolution_note(doc)
         pokemon.create_level_up_moves_table(doc, version_group="black-white")
         pokemon.create_learnable_moves(doc, version_group="black-white")
 
         doc.output_page(markdown_file_path)
 
-        with open("temp/new_navigation_items.txt", 'a') as navigation_items:
-            navigation_items.write(
-                f"- {pokedex_markdown_file_name} - {pokemon_data['name'].title()}:"
-                f" pokemons/{pokedex_markdown_file_name}.md \n"
-            )
-            navigation_items.close()
+        navigation_items_file.write(
+            f"- {pokedex_markdown_file_name} - {pokemon_data['name'].title()}:"
+            f" pokemons/{pokedex_markdown_file_name}.md \n"
+        )
+
+    navigation_items_file.close()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 {
-  "bulbasaur": {
+  "example": {
     "stats": {
       "hp": 60,
       "speed": 100,
@@ -294,14 +294,14 @@
     "abilities": ["water absorb", "swift swim"]
   },
   "poliwhirl": {
-    "evolution": [],
+    "evolution": "(Politoad) Level up at night with King's Rock equipped",
     "abilities": ["water absorb", "swift swim"]
   },
   "abra": {
     "abilities": ["synchronize", "magic guard"]
   },
   "kadabra": {
-    "evolution": [],
+    "evolution": "Level 36",
     "abilities": ["synchronize", "magic guard"]
   },
   "alakazam": {
@@ -311,7 +311,7 @@
     "abilities": ["guts", "no guard"]
   },
   "machoke": {
-    "evolution": [],
+    "evolution": "Level 39",
     "abilities": ["guts", "no guard"]
   },
   "machamp": {
@@ -341,11 +341,10 @@
     "abilities": ["rock head", "sturdy"]
   },
   "graveler": {
-    "evolution": [],
+    "evolution": "Level 36",
     "abilities": ["rock head", "sturdy"]
   },
   "golem": {
-    "evolution": [],
     "abilities": ["rock head", "sturdy"]
   },
   "ponyta": {
@@ -355,7 +354,7 @@
     "abilities": ["flame body", "flash fire"]
   },
   "slowpoke": {
-    "evolution": [],
+    "evolution": "(Slowbro) Level 37 or level up with shellder in the party, (Slowking) Level up at day with king's rock",
     "abilities": ["regenerator", "drizzle"]
   },
   "slowbro": {
@@ -413,7 +412,7 @@
     "abilities": ["levitate"]
   },
   "haunter": {
-    "evolution": [],
+    "evolution": "Level 36",
     "moves": {
       "learnt_by_machine": ["sludge-wave"]
     },
@@ -426,7 +425,7 @@
     "abilities": ["levitate"]
   },
   "onix": {
-    "evolution": [],
+    "evolution": "Level up at Night with Metal Coat",
     "stats": {
       "attack": 70
     },
@@ -455,5 +454,21 @@
   },
   "electrode": {
     "abilities": ["aftermath", "static"]
+  },
+  "exeggcute": {
+    "abilities": ["Chlorophyll", "Harvest"]
+  },
+  "exeggutor": {
+    "abilities": ["Chlorophyll", "Harvest"]
+  },
+  "cubone": {
+    "abilities": ["rock head", "Mold Breaker"]
+
+  },
+  "marowak": {
+    "stats": {
+      "speed": 70
+    },
+    "abilities": ["rock head", "mold breaker"]
   }
 }
