@@ -209,33 +209,36 @@ class Pokemon:
         data = self.pokemon_data
         moves = {}
 
-        for move in data["moves"]:
-            (move_name, move_values) = [(key, value) for key, value in move.items()][0]
+        with open(f"temp/moves.json", encoding='utf-8') as moves_file:
+            file_moves = json.load(moves_file)
+            moves_file.close()
 
-            if move_values["learn_method"] != "level-up":
+        for move_name in data["moves"]:
+            pokemon_move = data["moves"][move_name]
+
+            if pokemon_move["learn_method"] != "level-up":
                 continue
-            if move_values["level_learned_at"] == 0:
+            if pokemon_move["level_learned_at"] == 0:
                 continue
-            with open(f"temp/moves/{move_values['id']}.json", encoding='utf-8') as move_details_file:
-                move_details = json.load(move_details_file)
-                move_details_file.close()
 
             relevant_past_value = [
-                value for value in move_details["past_values"] if value["version_group"]["name"] == version_group
+                value for value in file_moves[move_name]["past_values"] if
+                value["version_group"]["name"] == version_group
             ]
             if len(relevant_past_value) > 0:
-                move_details["accuracy"] = relevant_past_value[0]["accuracy"] or move_details["accuracy"]
-                move_details["power"] = relevant_past_value[0]["power"] or move_details["power"]
-                move_details["pp"] = relevant_past_value[0]["power"] or move_details["pp"]
-                move_details["type"] = relevant_past_value[0]["type"] or move_details["type"]
+                file_moves[move_name]["accuracy"] = relevant_past_value[0]["accuracy"] or file_moves[move_name][
+                    "accuracy"]
+                file_moves[move_name]["power"] = relevant_past_value[0]["power"] or file_moves[move_name]["power"]
+                file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
+                file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
 
             moves[move_name] = {
-                "level_learned": move_values["level_learned_at"],
-                "power": move_details["power"],
-                "type": move_details["type"]["name"],
-                "accuracy": move_details["accuracy"],
-                "pp": move_details["pp"],
-                "damage_class": move_details["damage_class"]["name"],
+                "level_learned": pokemon_move["level_learned_at"],
+                "power": file_moves[move_name]["power"],
+                "type": file_moves[move_name]["type"],
+                "accuracy": file_moves[move_name]["accuracy"],
+                "pp": file_moves[move_name]["pp"],
+                "damage_class": file_moves[move_name]["damage_class"],
             }
 
         sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["level_learned"], reverse=False))
@@ -254,17 +257,17 @@ class Pokemon:
             machines = json.load(machines_file)
             machines_file.close()
 
-        for move in data["moves"]:
-            (move_name, move_values) = [(key, value) for key, value in move.items()][0]
+        with open(f"temp/moves.json", encoding='utf-8') as moves_file:
+            file_moves = json.load(moves_file)
+            moves_file.close()
+
+        for move_name in data["moves"]:
+            pokemon_move = data["moves"][move_name]
 
             if move_name not in machines:
                 continue
-            if move_values["learn_method"] != "machine":
+            if pokemon_move["learn_method"] != "machine":
                 continue
-
-            with open(f"temp/moves/{move_values['id']}.json", encoding='utf-8') as move_details_file:
-                move_details = json.load(move_details_file)
-                move_details_file.close()
 
             machine_name = ""
             for machine_version in machines[move_name]:
@@ -275,13 +278,24 @@ class Pokemon:
             if machine_name == "":
                 continue
 
+            relevant_past_value = [
+                value for value in file_moves[move_name]["past_values"] if
+                value["version_group"]["name"] == version_group
+            ]
+            if len(relevant_past_value) > 0:
+                file_moves[move_name]["accuracy"] = relevant_past_value[0]["accuracy"] or file_moves[move_name][
+                    "accuracy"]
+                file_moves[move_name]["power"] = relevant_past_value[0]["power"] or file_moves[move_name]["power"]
+                file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
+                file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+
             moves[move_name] = {
                 "machine": machine_name.upper(),
-                "power": move_details["power"],
-                "type": move_details["type"]["name"],
-                "accuracy": move_details["accuracy"],
-                "pp": move_details["pp"],
-                "damage_class": move_details["damage_class"]["name"],
+                "power": file_moves[move_name]["power"],
+                "type": file_moves[move_name]["type"],
+                "accuracy": file_moves[move_name]["accuracy"],
+                "pp": file_moves[move_name]["pp"],
+                "damage_class": file_moves[move_name]["damage_class"],
             }
 
         sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["machine"], reverse=False))
@@ -294,7 +308,7 @@ class Pokemon:
 
 
 def main():
-    pokemon_range = range(1, 101)
+    pokemon_range = range(1, 200)
 
     navigation_items_file = open("temp/new_navigation_items.txt", 'w')
 

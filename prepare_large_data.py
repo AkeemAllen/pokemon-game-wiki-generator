@@ -1,11 +1,9 @@
 import json
 from genericpath import isfile
-from os import makedirs
+from json import JSONDecodeError
 import requests
 import tqdm
 import sys
-import pokebase
-from deepdiff import DeepDiff
 
 
 def get_markdown_file_name(pokedex_number):
@@ -18,89 +16,94 @@ def get_markdown_file_name(pokedex_number):
     return file_name
 
 
-def update_pokemon_data(pokemon_data, pokemon_updates, moves):
-    if "stats" in pokemon_updates:
-        for stat in pokemon_data["stats"]:
-            stat_name = stat["stat"]["name"]
-            stat["base_stat"] = pokemon_updates["stats"][stat_name] if stat_name in pokemon_updates["stats"] else stat[
-                "base_stat"]
-
-    if "abilities" in pokemon_updates:
-        pokemon_data["abilities"] = [{"ability": {"name": update.title()}} for update in pokemon_updates["abilities"]]
-
-    if "types" in pokemon_updates:
-        pokemon_data["types"] = [{"type": {"name": update}} for update in pokemon_updates["types"]]
-
-    if "evolution" in pokemon_updates:
-        pokemon_data["evolution"] = pokemon_updates["evolution"]
-
-    if "moves" not in pokemon_updates:
-        return
-
-    for index, move in enumerate(pokemon_data["moves"]):
-        move_name = move["move"]["name"]
-        if move_name not in pokemon_updates["moves"]:
-            continue
-
-        move_id = move["move"]["url"].split("/")[-2]
-        level_up_move_changes = pokemon_updates["moves"]["learnt_by_level_up"]["updated_moves"]
-        updated_move_structure = {
-            move_name: {
-                "id": move_id,
-                "level_learned_at": level_up_move_changes[move_name],
-                "learn_method": "level-up"
-            }
-        }
-        moves.append(updated_move_structure)
-
-    machine_move_changes = pokemon_updates["moves"]["learnt_by_machine"] if "learnt_by_machine" in pokemon_updates["moves"] else []
-    for machine in machine_move_changes:
-        response = requests.get(f"https://pokeapi.co/api/v2/move/{machine}")
-        moves.append({
-            machine: {
-                "id": response.json()["id"],
-                "learn_method": "machine"
-            }
-        })
-
-    new_level_up_moves = []
-    if "learnt_by_level_up" in pokemon_updates["moves"] and "new_moves" in pokemon_updates["moves"]["learnt_by_level_up"]:
-        new_level_up_moves = pokemon_updates["moves"]["learnt_by_level_up"]["new_moves"]
-
-    for move in new_level_up_moves:
-        response = requests.get(f"https://pokeapi.co/api/v2/move/{move}")
-        moves.append({
-            move: {
-                "id": response.json()["id"],
-                "level_learned_at": new_level_up_moves[move],
-                "learn_method": "level-up"
-            }
-        })
-
-
-def prepare_move_data():
-    move_range = range(1, 916)
-    for move_id in tqdm.tqdm(move_range):
-
-        if isfile(f"temp/moves/{move_id}.json"):
-            continue
-
-        response = requests.get(f"https://pokeapi.co/api/v2/move/{move_id}")
-
-        if response == "Not Found":
-            continue
-
-        fh = open(f"temp/moves/{move_id}.json", "wb")
-        fh.write(response.content)
-        fh.close()
-
-
-def prepare_pokemon_data():
-    pokedex_numbers = range(1, 650)
-
+def update_pokemon_data():
     with open("updates/pokemon_changes.json", encoding="utf-8") as pokemon_changes_file:
         pokemon_changes = json.load(pokemon_changes_file)
         pokemon_changes_file.close()
+
+    with open(f"temp/moves.json", encoding='utf-8') as move_json_file:
+        moves = json.load(move_json_file)
+        move_json_file.close()
+
+    for pokemon_name, pokemon_updates in tqdm.tqdm(pokemon_changes.items()):
+        if pokemon_updates["id"] == 0:
+            continue
+
+        dex_number = pokemon_updates["id"]
+        with open(f"temp/pokemon/{dex_number}.json", encoding="utf-8") as pokemon_file:
+            pokemon_data = json.load(pokemon_file)
+            pokemon_file.close()
+
+        if "stats" in pokemon_updates:
+            for stat in pokemon_data["stats"]:
+                stat_name = stat["stat"]["name"]
+                stat["base_stat"] = pokemon_updates["stats"][stat_name] if stat_name in pokemon_updates["stats"] else stat[
+                    "base_stat"]
+
+        if "abilities" in pokemon_updates:
+            pokemon_data["abilities"] = [
+                {"ability": {"name": update.title()}} for update in pokemon_updates["abilities"]
+            ]
+
+        if "types" in pokemon_updates:
+            pokemon_data["types"] = [{"type": {"name": update}} for update in pokemon_updates["types"]]
+
+        if "evolution" in pokemon_updates:
+            pokemon_data["evolution"] = pokemon_updates["evolution"]
+
+        if "moves" in pokemon_updates:
+            for move in pokemon_updates["moves"]:
+                pokemon_data["moves"][move] = {
+                    "id": moves[move]["id"],
+                    "level_learned_at": pokemon_updates["moves"][move],
+                    "learn_method": "level-up"
+                }
+
+        if "machine_moves" in pokemon_updates:
+            for machine_move in pokemon_updates["machine_moves"]:
+                pokemon_data["moves"][machine_move] = {
+                    "id": moves[machine_move]["id"],
+                    "level_learned_at": 0,
+                    "learn_method": "machine"
+                }
+
+        with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
+            pokemon_file.write(json.dumps(pokemon_data))
+            pokemon_file.close()
+
+
+def prepare_move_data():
+    move_range = range(1, 903)
+    moves = {}
+    for move_id in tqdm.tqdm(move_range):
+
+        response = requests.get(f"https://pokeapi.co/api/v2/move/{move_id}")
+        if response == "Not Found":
+            continue
+
+        try:
+            move = response.json()
+        except JSONDecodeError as err:
+            print(f"Move with id {move_id} failed: {err}")
+            continue
+
+        moves[move["name"]] = {
+            "id": move_id,
+            "power": move["power"],
+            "type": move["type"]["name"],
+            "accuracy": move["accuracy"],
+            "pp": move["pp"],
+            "damage_class": move["damage_class"]["name"],
+            "past_values": move["past_values"]
+        }
+
+    fh = open(f"temp/moves.json", "w")
+    fh.write(json.dumps(moves))
+    fh.close()
+
+
+def download_pokemon_data():
+    pokedex_numbers = range(1, 200)
 
     for dex_number in tqdm.tqdm(pokedex_numbers):
 
@@ -113,7 +116,7 @@ def prepare_pokemon_data():
             continue
 
         pokemon_data = response.json()
-        moves = []
+        moves = {}
         # transform pokemon moves to make manipulating the data easier
         for index, move in enumerate(pokemon_data["moves"]):
             group_details = move["version_group_details"]
@@ -128,19 +131,11 @@ def prepare_pokemon_data():
 
             move_name = move["move"]["name"]
             move_id = move["move"]["url"].split("/")[-2]
-            updated_move_structure = {
-                move_name: {
-                    "id": move_id,
-                    "level_learned_at": move_details["level_learned_at"],
-                    "learn_method": move_details["move_learn_method"]["name"],
-                }
+            moves[move_name] = {
+                "id": move_id,
+                "level_learned_at": move_details["level_learned_at"],
+                "learn_method": move_details["move_learn_method"]["name"],
             }
-            moves.append(updated_move_structure)
-
-        if pokemon_data["name"] in pokemon_changes:
-            pokemon_updates = pokemon_changes[pokemon_data["name"]]
-            update_pokemon_data(pokemon_data, pokemon_updates, moves)
-            print(f"{pokemon_data['name']} updated")
 
         pokemon_data["moves"] = moves
         with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
@@ -198,11 +193,13 @@ def prepare_technical_and_hidden_machines_data():
 
 if __name__ == "__main__":
     if "--pokemon" in sys.argv:
-        prepare_pokemon_data()
+        download_pokemon_data()
     if "--sprites" in sys.argv:
         download_pokemon_sprites()
     if "--moves" in sys.argv:
         prepare_move_data()
     if "--machines" in sys.argv:
         prepare_technical_and_hidden_machines_data()
+    if "--update" in sys.argv:
+        update_pokemon_data()
 
