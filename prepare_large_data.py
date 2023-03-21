@@ -102,8 +102,8 @@ def prepare_move_data():
     fh.close()
 
 
-def download_pokemon_data():
-    pokedex_numbers = range(1, 200)
+def download_pokemon_data(pokemon_range: int = 650):
+    pokedex_numbers = range(1, pokemon_range)
 
     for dex_number in tqdm.tqdm(pokedex_numbers):
 
@@ -116,9 +116,23 @@ def download_pokemon_data():
             continue
 
         pokemon_data = response.json()
+        
+        # flatten data structure to make it easier to work with
+        types = []
+        for type in pokemon_data["types"]:
+            types.append(type["type"]["name"])
+        
+        abilities = []
+        for ability in pokemon_data["abilities"]:
+            abilities.append(ability["ability"]["name"])
+        
+        stats = {}
+        for stat in pokemon_data["stats"]:
+            stat_name = stat["stat"]["name"]
+            stats[stat_name] = stat["base_stat"]
+        
         moves = {}
-        # transform pokemon moves to make manipulating the data easier
-        for index, move in enumerate(pokemon_data["moves"]):
+        for move in pokemon_data["moves"]:
             group_details = move["version_group_details"]
             move_details = None
             for detail in group_details:
@@ -136,8 +150,16 @@ def download_pokemon_data():
                 "level_learned_at": move_details["level_learned_at"],
                 "learn_method": move_details["move_learn_method"]["name"],
             }
-
+        
+        pokemon_data["stats"] = stats        
+        pokemon_data["abilities"] = abilities
+        pokemon_data["types"] = types
         pokemon_data["moves"] = moves
+
+        del pokemon_data["game_indices"]
+        del pokemon_data["held_items"]
+        del pokemon_data["species"]
+
         with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
             pokemon_file.write(json.dumps(pokemon_data))
             pokemon_file.close()

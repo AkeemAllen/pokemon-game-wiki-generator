@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from pydantic import BaseModel
+import pokebase
 
 app = FastAPI()
 
@@ -48,10 +49,20 @@ class Pokemon(BaseModel):
     __root__: Dict[str, Changes]
 
 
+@app.get("/pokemon/{pokemon_name}")
+async def get_pokemon(pokemon_name: str):
+    dex_number = pokebase.pokemon(pokemon_name).id
+    with open(f"temp/pokemon/{dex_number}.json", encoding="utf-8") as pokemon_file:
+        pokemon_data = json.load(pokemon_file)
+        pokemon_file.close()
+
+    return pokemon_data
+
+
 @app.post("/generate")
 async def generate_pokemon_changes_file(changes: Pokemon):
     print(changes.json(exclude_none=True))
-    with open("../updates/test/changes.json", "w") as pokemon_changes_file:
+    with open("updates/test/changes.json", "w") as pokemon_changes_file:
         pokemon_changes_file.write(changes.json(exclude_none=True))
         pokemon_changes_file.close()
  
