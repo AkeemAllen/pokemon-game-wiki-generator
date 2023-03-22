@@ -102,9 +102,10 @@ def prepare_move_data():
     fh.close()
 
 
-def download_pokemon_data(pokemon_range: int = 650):
+def download_pokemon_data(pokemon_range: int = 5):
     pokedex_numbers = range(1, pokemon_range)
 
+    pokemon = {}
     for dex_number in tqdm.tqdm(pokedex_numbers):
 
         # if isfile(f"temp/pokemon/{dex_number}.json"):
@@ -129,6 +130,12 @@ def download_pokemon_data(pokemon_range: int = 650):
         stats = {}
         for stat in pokemon_data["stats"]:
             stat_name = stat["stat"]["name"]
+            if stat_name == "special-attack":
+                stat_name = "sp_attack"
+            
+            if stat_name == "special-defense":
+                stat_name = "sp_defense"
+
             stats[stat_name] = stat["base_stat"]
         
         moves = {}
@@ -151,18 +158,30 @@ def download_pokemon_data(pokemon_range: int = 650):
                 "learn_method": move_details["move_learn_method"]["name"],
             }
         
+        pokemon_data["sprite"] = pokemon_data["sprites"]["front_default"]
         pokemon_data["stats"] = stats        
         pokemon_data["abilities"] = abilities
         pokemon_data["types"] = types
         pokemon_data["moves"] = moves
 
+        # remove unnecessary data
         del pokemon_data["game_indices"]
         del pokemon_data["held_items"]
         del pokemon_data["species"]
-
-        with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
-            pokemon_file.write(json.dumps(pokemon_data))
-            pokemon_file.close()
+        del pokemon_data["location_area_encounters"]
+        del pokemon_data["weight"]
+        del pokemon_data["height"]
+        del pokemon_data["forms"]
+        del pokemon_data["order"]
+        del pokemon_data["is_default"]
+        del pokemon_data["past_types"]
+        del pokemon_data["base_experience"]
+        del pokemon_data["sprites"]
+        pokemon[pokemon_data["name"]] = pokemon_data
+        
+    fh = open(f"temp/pokemon.json", "w")
+    fh.write(json.dumps(pokemon))
+    fh.close()
 
 
 def download_pokemon_sprites():
@@ -174,7 +193,7 @@ def download_pokemon_sprites():
 
         with open(f"temp/pokemon/{pokedex_number}.json", encoding='utf-8') as pokemon_data_file:
             pokemon_data = json.load(pokemon_data_file)
-            front_facing_sprite_image_url = pokemon_data['sprites']['front_default']
+            front_facing_sprite_image_url = pokemon_data['sprite']
 
         image_response = requests.get(f"{front_facing_sprite_image_url}")
 

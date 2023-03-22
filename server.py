@@ -1,9 +1,11 @@
 from typing import Dict, Optional
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 import json
-from pydantic import BaseModel
 import pokebase
+from models.pokemon_models import Changes, PokemonData
+
 
 app = FastAPI()
 
@@ -22,53 +24,53 @@ app.add_middleware(
 )
 
 
-class Stats(BaseModel):
-    hp: Optional[float]
-    attack: Optional[float]
-    defense: Optional[float]
-    special_attack: Optional[float]
-    special_defense: Optional[float]
-    speed: Optional[float]
-
-
-class Move(BaseModel):
-    __root__: Dict[str, int]
-
-
-class Changes(BaseModel):
-    id: int
-    types: Optional[list[str]]
-    abilities: Optional[list[str]]
-    stats: Optional[Stats]
-    moves: Optional[Move]
-    machine_moves: Optional[list[str]]
-    evolution: Optional[str]
-
-
-class Pokemon(BaseModel):
-    __root__: Dict[str, Changes]
-
-
 @app.get("/pokemon/{pokemon_name}")
 async def get_pokemon(pokemon_name: str):
-    dex_number = pokebase.pokemon(pokemon_name).id
-    with open(f"temp/pokemon/{dex_number}.json", encoding="utf-8") as pokemon_file:
-        pokemon_data = json.load(pokemon_file)
+    with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
+        pokemon = json.load(pokemon_file)
         pokemon_file.close()
 
-    return pokemon_data
+    return pokemon[pokemon_name]
 
 
-@app.post("/generate")
-async def generate_pokemon_changes_file(changes: Pokemon):
-    print(changes.json(exclude_none=True))
-    with open("updates/test/changes.json", "w") as pokemon_changes_file:
-        pokemon_changes_file.write(changes.json(exclude_none=True))
-        pokemon_changes_file.close()
+@app.post("/save-changes/{pokemon_name}")
+async def save_pokemon_changes(changes: Changes, pokemon_name: str):
+    with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
+        pokemon = json.load(pokemon_file)
+        pokemon_file.close()
+    
+    if changes.types:
+        pokemon[pokemon_name]["types"] = changes.types
+    if changes.abilities:
+        pokemon[pokemon_name]["abilities"] = changes.abilities
+    if changes.stats:
+        pokemon[pokemon_name]["stats"] = changes.stats
+   
+    if not changes.moves or not changes.machine_moves:
+        return {"message": "Changes Saved"}
+    print("here") 
+    with open(f"temp/moves.json", encoding='utf-8') as move_json_file:
+        moves= json.load(move_json_file)
+        move_json_file.close()
+    
+    if changes.moves:
+        for move, value in changes.moves.__root__.items():
+            pokemon[pokemon_name]["moves"][move] = {
+                "id": moves[move]["id"],
+                "level_learned_at": value,
+                "learn_method": "level-up"
+            }
+   
+    if changes.machine_moves:
+        for move in changes.machine_moves:
+            pokemon[pokemon_name]["moves"][move] = {
+                "id": moves[move]["id"],
+                "level_learned_at": 0,
+                "learn_method": "machine"
+            }
+    
+    with open(f"temp/pokemon.json", "w") as pokemon_file:
+        pokemon_file.write(json.dumps(pokemon))
+        pokemon_file.close()
  
-    return {"message": "Changes Saved"}
-
-
-@app.get("/")
-async def test():
     return {"message": "Changes Saved"}
