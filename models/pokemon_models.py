@@ -3,32 +3,30 @@ from pydantic import BaseModel
 
 
 class Stats(BaseModel):
-    hp: Optional[float]
-    attack: Optional[float]
-    defense: Optional[float]
-    sp_attack: Optional[float]
-    sp_defense: Optional[float]
-    speed: Optional[float]
+    hp: Optional[int]
+    attack: Optional[int]
+    defense: Optional[int]
+    sp_attack: Optional[int]
+    sp_defense: Optional[int]
+    speed: Optional[int]
 
 
 class MoveData(BaseModel):
-    id: int
     level_learned_at: int
     learn_method: str
+    delete: Optional[bool] = False
 
 
 class Move(BaseModel):
     __root__: Dict[str, MoveData]
 
-class ChangeMove(BaseModel):
-    __root__: Dict[str, int]
 
 class Changes(BaseModel):
-    id: int
+    id: Optional[int]
     types: Optional[list[str]]
     abilities: Optional[list[str]]
     stats: Optional[Stats]
-    moves: Optional[ChangeMove]
+    moves: Optional[Move]
     machine_moves: Optional[list[str]]
     evolution: Optional[str]
 

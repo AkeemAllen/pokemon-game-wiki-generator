@@ -108,9 +108,6 @@ def download_pokemon_data(pokemon_range: int = 5):
     pokemon = {}
     for dex_number in tqdm.tqdm(pokedex_numbers):
 
-        # if isfile(f"temp/pokemon/{dex_number}.json"):
-        #     continue
-
         response = requests.get(f"https://pokeapi.co/api/v2/pokemon/{dex_number}")
 
         if response == "Not Found":
@@ -151,9 +148,7 @@ def download_pokemon_data(pokemon_range: int = 5):
                 continue
 
             move_name = move["move"]["name"]
-            move_id = move["move"]["url"].split("/")[-2]
             moves[move_name] = {
-                "id": move_id,
                 "level_learned_at": move_details["level_learned_at"],
                 "learn_method": move_details["move_learn_method"]["name"],
             }
