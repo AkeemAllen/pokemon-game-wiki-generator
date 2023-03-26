@@ -21,7 +21,7 @@ class Move(BaseModel):
     __root__: Dict[str, MoveData]
 
 
-class Changes(BaseModel):
+class PokemonChanges(BaseModel):
     id: Optional[int]
     types: Optional[list[str]]
     abilities: Optional[list[str]]
@@ -29,10 +29,6 @@ class Changes(BaseModel):
     moves: Optional[Move]
     machine_moves: Optional[list[str]]
     evolution: Optional[str]
-
-
-class PokemonChanges(BaseModel):
-    __root__: Dict[str, Changes]
 
 
 class PokemonData(BaseModel):
