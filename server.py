@@ -48,6 +48,9 @@ async def save_pokemon_changes(changes: PokemonChanges, pokemon_name: str):
     if changes.stats:
         for stat, value in changes.stats:
             pokemon[pokemon_name]["stats"][stat] = value
+    
+    if changes.evolution:
+        pokemon[pokemon_name]["evolution"] = changes.evolution
   
     if changes.moves:
         for move, value in changes.moves.__root__.items():

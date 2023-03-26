@@ -7,45 +7,7 @@ import requests
 import tqdm
 from snakemd import Document, InlineText, Table, Paragraph
 from enum import Enum
-
-
-class PokemonVersions (Enum):
-    RED_BLUE = "red-blue"
-    YELLOW = "yellow"
-    GOLD_SILVER = "gold-silver"
-    CRYSTAL = "crystal"
-    RUBY_SAPPHIRE = "ruby-sapphire"
-    EMERALD = "emerald"
-    FIRERED_LEAFGREEN = "firered-leafgreen"
-    DIAMOND_PEARL = "diamond-pearl"
-    PLATINUM = "platinum"
-    HEARTGOLD_SOULSILVER = "heartgold-soulsilver"
-    BLACK_WHITE = "black-white"
-    BLACKTWO_WHITETWO = "black-2-white-2"
-    X_Y = "x-y"
-    OMEGARUBY_ALPHASAPPHIRE = "omega-ruby-alpha-sapphire"
-    SUN_MOON = "sun-moon"
-    ULTRASUN_ULTRAMOON = "ultra-sun-ultra-moon"
-    SWORD_SHEILD = "sword-shield"
-
-
-pokemon_versions_ordered = {
-    PokemonVersions.RED_BLUE: 0,
-    PokemonVersions.YELLOW: 1,
-    PokemonVersions.GOLD_SILVER: 2,
-    PokemonVersions.CRYSTAL: 3,
-    PokemonVersions.RUBY_SAPPHIRE: 4,
-    PokemonVersions.EMERALD: 5,
-    PokemonVersions.FIRERED_LEAFGREEN: 6,
-    PokemonVersions.DIAMOND_PEARL: 7,
-    PokemonVersions.BLACK_WHITE: 8,
-    PokemonVersions.BLACKTWO_WHITETWO: 9,
-    PokemonVersions.X_Y: 10,
-    PokemonVersions.OMEGARUBY_ALPHASAPPHIRE: 11,
-    PokemonVersions.SUN_MOON: 12,
-    PokemonVersions.ULTRASUN_ULTRAMOON: 13,
-    PokemonVersions.SWORD_SHEILD: 14
-}
+from models.pokemon_models import PokemonData, PokemonVersions, pokemon_versions_ordered, Stats, MoveData, MoveDetails
 
 
 def get_markdown_image_for_type(_type: str):
@@ -79,27 +41,30 @@ def generate_moves_array(moves, table_type):
 
 
 class Pokemon:
-    def __init__(self, dex_number):
-        self.pokemon_data = None
-        self.dex_number = dex_number
+    def __init__(self, pokemon_name: str):
+        self.pokemon_data = PokemonData()
+        self.pokemon_name = pokemon_name
+        self.dex_number = int(pokebase.pokemon(pokemon_name).id)
 
     def get_pokemon_data(self):
-        with open(f"temp/pokemon/{self.dex_number}.json", encoding='utf-8') as pokemon_data_file:
-            self.pokemon_data = json.load(pokemon_data_file)
+        with open(f"temp/pokemon.json", encoding='utf-8') as pokemon_data_file:
+            pokemon = json.load(pokemon_data_file)
             pokemon_data_file.close()
+
+            self.pokemon_data = PokemonData.parse_raw(json.dumps(pokemon[self.pokemon_name]))
         return self.pokemon_data
 
     def add_sprite(self, doc: Document):
         doc.add_element(
             Paragraph(
                 [InlineText(
-                    f"{self.pokemon_data['name']}", url=f"../img/pokemon/{get_markdown_file_name(self.dex_number)}.png", image=True
+                    f"{self.pokemon_data.name}", url=f"../img/pokemon/{get_markdown_file_name(self.dex_number)}.png", image=True
                 )]
             ))
 
     def create_type_table(self, doc: Document):
         data = self.pokemon_data
-        type_images = [get_markdown_image_for_type(_type["type"]["name"]) for _type in data["types"]]
+        type_images = [get_markdown_image_for_type(_type) for _type in data.types]
 
         doc.add_header("Types", 2)
         doc.add_table(
@@ -113,7 +78,7 @@ class Pokemon:
 
     def create_defenses_table(self, doc: Document):
         data = self.pokemon_data
-        types = [_type["type"]["name"] for _type in data["types"]]
+        types = [_type for _type in data.types]
         query_string = f"{types[0]}+{types[1]}" if len(types) > 1 else f"{types[0]}"
 
         response = requests.get(f"http://localhost:3000?types={query_string}").json()
@@ -160,7 +125,7 @@ class Pokemon:
 
     def create_ability_table(self, doc: Document):
         data = self.pokemon_data
-        abilities = [ability["ability"]["name"].title() for ability in data["abilities"]]
+        abilities = [ability.title() for ability in data.abilities]
 
         doc.add_header("Abilities", 2)
         doc.add_table(
@@ -172,12 +137,8 @@ class Pokemon:
 
     def create_stats_table(self, doc: Document):
         data = self.pokemon_data
-        stats = {}
 
-        base_stat_total = 0
-        for stat in data["stats"]:
-            stats[stat["stat"]["name"]] = stat["base_stat"]
-            base_stat_total += stat["base_stat"]
+        base_stat_total = sum(dict(data.stats).values())
 
         doc.add_header("Base Stats", 2)
         doc.add_table(
@@ -185,12 +146,12 @@ class Pokemon:
             [
                 [
                     "All",
-                    stats.get("hp"),
-                    stats.get("attack"),
-                    stats.get("defense"),
-                    stats.get("special-attack"),
-                    stats.get("special-defense"),
-                    stats.get("speed"),
+                    data.stats.hp,
+                    data.stats.attack,
+                    data.stats.defense,
+                    data.stats.sp_attack,
+                    data.stats.sp_defense,
+                    data.stats.speed,
                     base_stat_total
                 ]
             ]
@@ -199,11 +160,11 @@ class Pokemon:
     def create_evolution_note(self, doc: Document):
         data = self.pokemon_data
 
-        if "evolution" not in data:
+        if not data.evolution:
             return
 
         doc.add_header("Evolution Change", 2)
-        doc.add_paragraph(data["evolution"])
+        doc.add_paragraph(data.evolution)
 
     def create_level_up_moves_table(self, doc: Document, version_group: str):
         data = self.pokemon_data
@@ -212,13 +173,11 @@ class Pokemon:
         with open(f"temp/moves.json", encoding='utf-8') as moves_file:
             file_moves = json.load(moves_file)
             moves_file.close()
-
-        for move_name in data["moves"]:
-            pokemon_move = data["moves"][move_name]
-
-            if pokemon_move["learn_method"] != "level-up":
+        
+        for move_name, details in data.moves.__root__.items():
+            if details.learn_method != "level-up":
                 continue
-            if pokemon_move["level_learned_at"] == 0:
+            if details.level_learned_at == 0:
                 continue
 
             relevant_past_value = [
@@ -232,13 +191,14 @@ class Pokemon:
                 file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
                 file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
 
+            move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
             moves[move_name] = {
-                "level_learned": pokemon_move["level_learned_at"],
-                "power": file_moves[move_name]["power"],
-                "type": file_moves[move_name]["type"],
-                "accuracy": file_moves[move_name]["accuracy"],
-                "pp": file_moves[move_name]["pp"],
-                "damage_class": file_moves[move_name]["damage_class"],
+                "level_learned": details.level_learned_at,
+                "power": move_data.power,
+                "type": move_data.type,
+                "accuracy": move_data.accuracy,
+                "pp": move_data.pp,
+                "damage_class": move_data.damage_class,
             }
 
         sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["level_learned"], reverse=False))
@@ -261,12 +221,10 @@ class Pokemon:
             file_moves = json.load(moves_file)
             moves_file.close()
 
-        for move_name in data["moves"]:
-            pokemon_move = data["moves"][move_name]
-
+        for move_name, details in data.moves.__root__.items():
             if move_name not in machines:
                 continue
-            if pokemon_move["learn_method"] != "machine":
+            if details.learn_method != "machine":
                 continue
 
             machine_name = ""
@@ -289,13 +247,14 @@ class Pokemon:
                 file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
                 file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
 
+            move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
             moves[move_name] = {
                 "machine": machine_name.upper(),
-                "power": file_moves[move_name]["power"],
-                "type": file_moves[move_name]["type"],
-                "accuracy": file_moves[move_name]["accuracy"],
-                "pp": file_moves[move_name]["pp"],
-                "damage_class": file_moves[move_name]["damage_class"],
+                "power": move_data.power,
+                "type": move_data.type,
+                "accuracy": move_data.accuracy,
+                "pp": move_data.pp,
+                "damage_class": move_data.damage_class,
             }
 
         sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["machine"], reverse=False))
@@ -308,12 +267,13 @@ class Pokemon:
 
 
 def main():
-    pokemon_range = range(1, 200)
+    pokemon_range = range(1, 2)
 
     navigation_items_file = open("temp/new_navigation_items.txt", 'w')
 
     for pokedex_number in tqdm.tqdm(pokemon_range):
-        pokemon = Pokemon(pokedex_number)
+        pokemon_name = pokebase.pokemon(pokedex_number).name
+        pokemon = Pokemon(pokemon_name)
         pokemon_data = pokemon.get_pokemon_data()
 
         pokedex_markdown_file_name = get_markdown_file_name(pokedex_number)
@@ -322,7 +282,7 @@ def main():
 
         doc = Document(pokedex_markdown_file_name)
 
-        doc.add_header(f"{pokedex_markdown_file_name} - {pokemon_data['name'].title()}")
+        doc.add_header(f"{pokedex_markdown_file_name} - {pokemon_data.name.title()}")
 
         pokemon.add_sprite(doc)
         pokemon.create_type_table(doc)
@@ -335,10 +295,10 @@ def main():
 
         doc.output_page(markdown_file_path)
 
-        navigation_items_file.write(
-            f"- {pokedex_markdown_file_name} - {pokemon_data['name'].title()}:"
-            f" pokemons/{pokedex_markdown_file_name}.md \n"
-        )
+        # navigation_items_file.write(
+        #     f"- {pokedex_markdown_file_name} - {pokemon_data['name'].title()}:"
+        #     f" pokemons/{pokedex_markdown_file_name}.md \n"
+        # )
 
     navigation_items_file.close()
 
