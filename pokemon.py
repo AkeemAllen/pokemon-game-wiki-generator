@@ -267,7 +267,7 @@ class Pokemon:
 
 
 def main():
-    pokemon_range = range(1, 2)
+    pokemon_range = range(1, 5)
 
     navigation_items_file = open("temp/new_navigation_items.txt", 'w')
 
@@ -295,10 +295,10 @@ def main():
 
         doc.output_page(markdown_file_path)
 
-        # navigation_items_file.write(
-        #     f"- {pokedex_markdown_file_name} - {pokemon_data['name'].title()}:"
-        #     f" pokemons/{pokedex_markdown_file_name}.md \n"
-        # )
+        navigation_items_file.write(
+            f"- {pokedex_markdown_file_name} - {pokemon_data.name.title()}:"
+            f" pokemons/{pokedex_markdown_file_name}.md \n"
+        )
 
     navigation_items_file.close()
 
