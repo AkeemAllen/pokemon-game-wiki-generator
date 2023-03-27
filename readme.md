@@ -4,7 +4,7 @@ Credit to [@FredericDlugi's](https://github.com/FredericDlugi) original [platinu
 
 This Readme is a guide to generating and deploying your own versions of the platinum-renegade-wiki.
 
-## Preparing Large Data
+## Step 1 - Preparing Large Data
 NB: _The current scope is limited to existing pokemon and moves. So you won't be able to prepare something like fakemon data. This can hopefully be added in a later version_
 
 Before any of the documentation can be generated, all the data has to be prepared. This is all done in the `prepare_large_data.py` file. You can prepare pokemon data, moves, machines and sprites.
