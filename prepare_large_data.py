@@ -1,3 +1,4 @@
+import argparse
 import json
 from genericpath import isfile
 from json import JSONDecodeError
@@ -14,62 +15,6 @@ def get_markdown_file_name(pokedex_number):
         file_name = f"{pokedex_number}"
 
     return file_name
-
-
-def update_pokemon_data():
-    with open("updates/pokemon_changes.json", encoding="utf-8") as pokemon_changes_file:
-        pokemon_changes = json.load(pokemon_changes_file)
-        pokemon_changes_file.close()
-
-    with open(f"temp/moves.json", encoding='utf-8') as move_json_file:
-        moves = json.load(move_json_file)
-        move_json_file.close()
-
-    for pokemon_name, pokemon_updates in tqdm.tqdm(pokemon_changes.items()):
-        if pokemon_updates["id"] == 0:
-            continue
-
-        dex_number = pokemon_updates["id"]
-        with open(f"temp/pokemon/{dex_number}.json", encoding="utf-8") as pokemon_file:
-            pokemon_data = json.load(pokemon_file)
-            pokemon_file.close()
-
-        if "stats" in pokemon_updates:
-            for stat in pokemon_data["stats"]:
-                stat_name = stat["stat"]["name"]
-                stat["base_stat"] = pokemon_updates["stats"][stat_name] if stat_name in pokemon_updates["stats"] else stat[
-                    "base_stat"]
-
-        if "abilities" in pokemon_updates:
-            pokemon_data["abilities"] = [
-                {"ability": {"name": update.title()}} for update in pokemon_updates["abilities"]
-            ]
-
-        if "types" in pokemon_updates:
-            pokemon_data["types"] = [{"type": {"name": update}} for update in pokemon_updates["types"]]
-
-        if "evolution" in pokemon_updates:
-            pokemon_data["evolution"] = pokemon_updates["evolution"]
-
-        if "moves" in pokemon_updates:
-            for move in pokemon_updates["moves"]:
-                pokemon_data["moves"][move] = {
-                    "id": moves[move]["id"],
-                    "level_learned_at": pokemon_updates["moves"][move],
-                    "learn_method": "level-up"
-                }
-
-        if "machine_moves" in pokemon_updates:
-            for machine_move in pokemon_updates["machine_moves"]:
-                pokemon_data["moves"][machine_move] = {
-                    "id": moves[machine_move]["id"],
-                    "level_learned_at": 0,
-                    "learn_method": "machine"
-                }
-
-        with open(f"temp/pokemon/{dex_number}.json", "w") as pokemon_file:
-            pokemon_file.write(json.dumps(pokemon_data))
-            pokemon_file.close()
 
 
 def prepare_move_data():
@@ -102,8 +47,8 @@ def prepare_move_data():
     fh.close()
 
 
-def download_pokemon_data(pokemon_range: int = 5):
-    pokedex_numbers = range(1, pokemon_range)
+def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int = 650):
+    pokedex_numbers = range(pokemon_range_start, pokemon_range_end + 1)
 
     pokemon = {}
     for dex_number in tqdm.tqdm(pokedex_numbers):
@@ -179,8 +124,8 @@ def download_pokemon_data(pokemon_range: int = 5):
     fh.close()
 
 
-def download_pokemon_sprites():
-    pokemon_range = range(1, 650)
+def download_pokemon_sprites(pokemon_range_start: int = 1, pokemon_range_end: int = 650):
+    pokemon_range = range(pokemon_range_start, pokemon_range_end + 1)
     for pokedex_number in tqdm.tqdm(pokemon_range):
         image_file_name = get_markdown_file_name(pokedex_number)
         if isfile(f"docs/img/pokemon/{image_file_name}.png"):
@@ -228,14 +173,38 @@ def prepare_technical_and_hidden_machines_data():
 
 
 if __name__ == "__main__":
-    if "--pokemon" in sys.argv:
-        download_pokemon_data()
-    if "--sprites" in sys.argv:
-        download_pokemon_sprites()
-    if "--moves" in sys.argv:
-        prepare_move_data()
-    if "--machines" in sys.argv:
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("-p", "--pokemon", help="Download pokemon data", action="store_true")
+    parser.add_argument("-s", "--sprites", help="Download pokemon sprites", action="store_true")
+    parser.add_argument("-tm", "--machines", help="Download technical and hidden machines data", action="store_true")
+    parser.add_argument("-m", "--moves", help="Download moves data", action="store_true")
+    parser.add_argument(
+        "-r", "--range", 
+        help="Specify range of data to download. Note: This can be pokemon, moves, sprites, etc",
+        nargs=2,
+        type=int
+    )
+
+    args = parser.parse_args()
+    
+    if args.pokemon:
+        if args.range:
+            download_pokemon_data(args.range[0], args.range[1])
+        else:
+            download_pokemon_data()
+    
+    if args.sprites:
+        if args.range:
+            download_pokemon_sprites(args.range[0], args.range[1])
+        else:
+            download_pokemon_sprites()
+    
+    if args.machines:
         prepare_technical_and_hidden_machines_data()
-    if "--update" in sys.argv:
-        update_pokemon_data()
+    
+    if args.moves:
+        prepare_move_data() 
+
+
 

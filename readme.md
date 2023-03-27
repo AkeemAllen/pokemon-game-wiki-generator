@@ -1,53 +1,29 @@
-# Platinum Renegade Wiki
+# Pokemon Game Wiki Generator
 
-This Readme should help you to edit and deploy your own version of this Wiki
+Credit to [@FredericDlugi's](https://github.com/FredericDlugi) original [platinum renegade wiki](https://github.com/FredericDlugi/platinum-renegade-wiki) that served as base design and idea for this project. This project mainly serves as a way to create user-friendly documentation for new and existing pokemon rom hacks (and maybe fan games down the line)
 
-## Setup
+This Readme is a guide to generating and deploying your own versions of the platinum-renegade-wiki.
 
-1.  Clone this repo
-2.  Install python
-3.  Install requirements with `pip install -r requirements.txt`
+## Preparing Large Data
+NB: _The current scope is limited to existing pokemon and moves. So you won't be able to prepare something like fakemon data. This can hopefully be added in a later version_
 
-## Local Development
+Before any of the documentation can be generated, all the data has to be prepared. This is all done in the `prepare_large_data.py` file. You can prepare pokemon data, moves, machines and sprites.
 
-In the main directory of this repo run:
+### Pokemon
+The following command will download current pokemon data up to a specified range. The pokemon data will be store in `temp/pokemon.json` for use throughout the documentation generation process.
 ```
-python -m mkdocs serve
+python prepare_large_data.py --pokemon [--range, -r] <range_start> <range_end>
 ```
-## Fix table layout
+For example `python prepare_large_data.py --pokemon -r 1 5` will download pokemon data from Bulbasaur to Charmeleon
 
-This script fixes the table formatting and removes unused columns.
-Example to run it on everything.
-```sh
-python fix_table_formatting.py ./docs/*.md ./docs/*/*.md
+### Moves and Technical Machines
+The following command will download all current moves and technical machines in pokemon. The moves and technical machines will be downloaded to the `/temp/moves.json` and `temp/machins.json` respectively.
 ```
-
-## Fix links
-
-This script fixes all the link locations in a range of files.
-Example to fix the links for all pokemon changes.
-If you have new links that need to be added add them to `links.txt`
-```sh
-python fix_links.py /pokemons/*.md
+python prepare_large_data.py --moves --machines
 ```
 
-## PokeAPI related scripts
-
-The `download_pokemon.py` script loads a lot of data from the PokeAPI and
-caches it in `temp`.
-
-### Create Level-Up tables
-
-The `create_level_up_table.py` script was used to add move infos to all level up moves. The move-info is mostly grabbed from PokeAPI but contains the changes done by Drayano.
-
-### Create Stat tables
-
-The `create_stat_table.py` script was used to add stats to all pokemon regardless of change. The stats is mostly grabbed from PokeAPI but contains the changes done by Drayano.
-
-### Create Encounter tables
-
-The `create_encounter_table.py` script was used to add encounter locations to all Pokemons. Thanks to @Paco-m-c for the suggestion.
-
-### Create Ability tables
-
-The `create_ability_table.py` script was used to add the ability to all pokemon regardless of change. The stats is mostly grabbed from PokeAPI but contains the changes done by Drayano.
+### Sprites
+The following command will download current pokemon sprites up to the specified range. The sprites will be downloaded to the `/docs/img/pokemon` folder
+```
+python prepare_large_data.py --sprites [--range, -r] <range_start> <range_end>
+```

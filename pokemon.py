@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+import sys
 
 import pokebase
 from genericpath import isfile
@@ -266,8 +267,8 @@ class Pokemon:
         )
 
 
-def main():
-    pokemon_range = range(1, 5)
+def main(range_start: int = 1, range_end: int = 650):
+    pokemon_range = range(range_start, range_end + 1)
 
     navigation_items_file = open("temp/new_navigation_items.txt", 'w')
 
@@ -304,7 +305,12 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--range" in sys.argv:
+        pokemon_range_start = int(sys.argv[sys.argv.index("--range") + 1])
+        pokemon_range_end = int(sys.argv[sys.argv.index("--range") + 2])
+        main(pokemon_range_start, pokemon_range_end)
+    else:
+        main()
 
 
 
