@@ -39,7 +39,7 @@ def prepare_move_data():
             "accuracy": move["accuracy"],
             "pp": move["pp"],
             "damage_class": move["damage_class"]["name"],
-            "past_values": move["past_values"]
+            "past_values": move["past_values"],
         }
 
     fh = open(f"temp/moves.json", "w")
@@ -59,27 +59,27 @@ def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int =
             continue
 
         pokemon_data = response.json()
-        
+
         # flatten data structure to make it easier to work with
         types = []
         for type in pokemon_data["types"]:
             types.append(type["type"]["name"])
-        
+
         abilities = []
         for ability in pokemon_data["abilities"]:
             abilities.append(ability["ability"]["name"])
-        
+
         stats = {}
         for stat in pokemon_data["stats"]:
             stat_name = stat["stat"]["name"]
             if stat_name == "special-attack":
                 stat_name = "sp_attack"
-            
+
             if stat_name == "special-defense":
                 stat_name = "sp_defense"
 
             stats[stat_name] = stat["base_stat"]
-        
+
         moves = {}
         for move in pokemon_data["moves"]:
             group_details = move["version_group_details"]
@@ -97,9 +97,9 @@ def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int =
                 "level_learned_at": move_details["level_learned_at"],
                 "learn_method": move_details["move_learn_method"]["name"],
             }
-        
+
         pokemon_data["sprite"] = pokemon_data["sprites"]["front_default"]
-        pokemon_data["stats"] = stats        
+        pokemon_data["stats"] = stats
         pokemon_data["abilities"] = abilities
         pokemon_data["types"] = types
         pokemon_data["moves"] = moves
@@ -118,26 +118,31 @@ def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int =
         del pokemon_data["base_experience"]
         del pokemon_data["sprites"]
         pokemon[pokemon_data["name"]] = pokemon_data
-        
+
     fh = open(f"temp/pokemon.json", "w")
     fh.write(json.dumps(pokemon))
     fh.close()
 
 
-def download_pokemon_sprites(pokemon_range_start: int = 1, pokemon_range_end: int = 650):
+def download_pokemon_sprites(
+    wiki_name: str, pokemon_range_start: int = 1, pokemon_range_end: int = 650
+):
+    with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
+        all_downloaded_pokemon = json.load(pokemon_file)
+        pokemon_file.close()
+
     pokemon_range = range(pokemon_range_start, pokemon_range_end + 1)
-    for pokedex_number in tqdm.tqdm(pokemon_range):
-        image_file_name = get_markdown_file_name(pokedex_number)
-        if isfile(f"docs/img/pokemon/{image_file_name}.png"):
+
+    for _, pokemon_data in all_downloaded_pokemon.items():
+        image_file_name = get_markdown_file_name(pokemon_data["id"])
+        if isfile(f"dist/{wiki_name}/docs/img/pokemon/{image_file_name}.png"):
             continue
 
-        with open(f"temp/pokemon/{pokedex_number}.json", encoding='utf-8') as pokemon_data_file:
-            pokemon_data = json.load(pokemon_data_file)
-            front_facing_sprite_image_url = pokemon_data['sprite']
+        image_response = requests.get(f"{pokemon_data['sprite']}")
 
-        image_response = requests.get(f"{front_facing_sprite_image_url}")
-
-        with open(f"docs/img/pokemon/{image_file_name}.png", "wb") as pokemon_image_sprite_file:
+        with open(
+            f"dist/{wiki_name}/docs/img/pokemon/{image_file_name}.png", "wb"
+        ) as pokemon_image_sprite_file:
             pokemon_image_sprite_file.write(image_response.content)
             pokemon_image_sprite_file.close()
 
@@ -158,10 +163,12 @@ def prepare_technical_and_hidden_machines_data():
         if machine_name not in machines:
             machines[machine_name] = []
 
-        machines[machine_data["move"]["name"]].append({
-            "technical_name": machine_data["item"]["name"],
-            "game_version": machine_data["version_group"]["name"]
-        })
+        machines[machine_data["move"]["name"]].append(
+            {
+                "technical_name": machine_data["item"]["name"],
+                "game_version": machine_data["version_group"]["name"],
+            }
+        )
     # Might be a better idea to append each new machine to the file
     # rather downloading all at once and then storing in file
     # That approach would likely be more tolerant of any faults that
@@ -174,37 +181,52 @@ def prepare_technical_and_hidden_machines_data():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument("-p", "--pokemon", help="Download pokemon data", action="store_true")
-    parser.add_argument("-s", "--sprites", help="Download pokemon sprites", action="store_true")
-    parser.add_argument("-tm", "--machines", help="Download technical and hidden machines data", action="store_true")
-    parser.add_argument("-m", "--moves", help="Download moves data", action="store_true")
+
     parser.add_argument(
-        "-r", "--range", 
+        "-p", "--pokemon", help="Download pokemon data", action="store_true"
+    )
+    parser.add_argument(
+        "-s", "--sprites", help="Download pokemon sprites", action="store_true"
+    )
+    parser.add_argument(
+        "-tm",
+        "--machines",
+        help="Download technical and hidden machines data",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-m", "--moves", help="Download moves data", action="store_true"
+    )
+    parser.add_argument(
+        "-r",
+        "--range",
         help="Specify range of data to download. Note: This can be pokemon, moves, sprites, etc",
         nargs=2,
-        type=int
+        type=int,
+    )
+    parser.add_argument(
+        "-wn",
+        "--wiki_name",
+        help="Specify the name of the wiki to download data from",
+        type=str,
     )
 
     args = parser.parse_args()
-    
+
     if args.pokemon:
         if args.range:
             download_pokemon_data(args.range[0], args.range[1])
         else:
             download_pokemon_data()
-    
+
     if args.sprites:
         if args.range:
-            download_pokemon_sprites(args.range[0], args.range[1])
+            download_pokemon_sprites(args.wiki_name, args.range[0], args.range[1])
         else:
-            download_pokemon_sprites()
-    
+            download_pokemon_sprites(args.wiki_name)
+
     if args.machines:
         prepare_technical_and_hidden_machines_data()
-    
+
     if args.moves:
-        prepare_move_data() 
-
-
-
+        prepare_move_data()

@@ -67,7 +67,7 @@ async def save_pokemon_changes(changes: PokemonChanges, pokemon_name: str):
         pokemon_file.write(json.dumps(pokemon))
         pokemon_file.close()
     
-    with open(f"updates/modified_pokemon.json", "r+") as changes_file:
+    with open(f"dist/updates/modified_pokemon.json", "r+") as changes_file:
         current_changes = json.load(changes_file)
         if pokemon_name not in current_changes["changed_pokemon"]:
             current_changes["changed_pokemon"].append(pokemon_name)
@@ -112,7 +112,7 @@ def save_move_changes(move_details: MoveDetails, move_name: str):
         moves_file.write(json.dumps(moves))
         moves_file.close()
     
-    with open(f"updates/modified_moves.json", "r+") as moves_changes_file:
+    with open(f"dist/updates/modified_moves.json", "r+") as moves_changes_file:
         current_changes = json.load(moves_changes_file)
         if move_name not in current_changes["changed_moves"]:
             current_changes["changed_moves"].append(move_name)

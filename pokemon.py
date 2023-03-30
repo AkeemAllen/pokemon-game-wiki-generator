@@ -1,14 +1,22 @@
 import json
 from collections import defaultdict
 import sys
-
+import yaml
+import argparse
 import pokebase
 from genericpath import isfile
 import requests
 import tqdm
 from snakemd import Document, InlineText, Table, Paragraph
 from enum import Enum
-from models.pokemon_models import PokemonData, PokemonVersions, pokemon_versions_ordered, Stats, MoveData, MoveDetails
+from models.pokemon_models import (
+    PokemonData,
+    PokemonVersions,
+    pokemon_versions_ordered,
+    Stats,
+    MoveData,
+    MoveDetails,
+)
 
 
 def get_markdown_image_for_type(_type: str):
@@ -29,10 +37,14 @@ def generate_moves_array(moves, table_type):
     table_array_for_moves = []
     for move_name, move_attributes in moves.items():
         move_array = [
-            move_attributes.get("level_learned" if table_type == "level_up" else "machine"),
+            move_attributes.get(
+                "level_learned" if table_type == "level_up" else "machine"
+            ),
             move_name.title(),
             move_attributes.get("power") if move_attributes.get("power") else "-",
-            f"{move_attributes.get('accuracy')}%" if move_attributes.get("accuracy") else "-",
+            f"{move_attributes.get('accuracy')}%"
+            if move_attributes.get("accuracy")
+            else "-",
             move_attributes.get("pp") if move_attributes.get("pp") else "-",
             f"{get_markdown_image_for_type(move_attributes.get('type'))}",
             f"{get_markdown_image_for_type(move_attributes.get('damage_class'))}",
@@ -48,20 +60,27 @@ class Pokemon:
         self.dex_number = int(pokebase.pokemon(pokemon_name).id)
 
     def get_pokemon_data(self):
-        with open(f"temp/pokemon.json", encoding='utf-8') as pokemon_data_file:
+        with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_data_file:
             pokemon = json.load(pokemon_data_file)
             pokemon_data_file.close()
 
-            self.pokemon_data = PokemonData.parse_raw(json.dumps(pokemon[self.pokemon_name]))
+            self.pokemon_data = PokemonData.parse_raw(
+                json.dumps(pokemon[self.pokemon_name])
+            )
         return self.pokemon_data
 
     def add_sprite(self, doc: Document):
         doc.add_element(
             Paragraph(
-                [InlineText(
-                    f"{self.pokemon_data.name}", url=f"../img/pokemon/{get_markdown_file_name(self.dex_number)}.png", image=True
-                )]
-            ))
+                [
+                    InlineText(
+                        f"{self.pokemon_data.name}",
+                        url=f"../img/pokemon/{get_markdown_file_name(self.dex_number)}.png",
+                        image=True,
+                    )
+                ]
+            )
+        )
 
     def create_type_table(self, doc: Document):
         data = self.pokemon_data
@@ -70,11 +89,9 @@ class Pokemon:
         doc.add_header("Types", 2)
         doc.add_table(
             ["Version", "Type"],
-            [
-                ["Classic", " ".join(map(str, type_images))]
-            ],
+            [["Classic", " ".join(map(str, type_images))]],
             [Table.Align.CENTER, Table.Align.RIGHT],
-            0
+            0,
         )
 
     def create_defenses_table(self, doc: Document):
@@ -91,26 +108,51 @@ class Pokemon:
         quarter_strong_resists = ""
 
         if "0" in response:
-            immunities = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['0']]
+            immunities = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["0"]
+            ]
 
         if "1" in response:
-            normal_resists = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['1']]
+            normal_resists = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["1"]
+            ]
 
         if "2" in response:
-            two_weak_resists = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['2']]
+            two_weak_resists = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["2"]
+            ]
 
         if "4" in response:
-            four_weak_resists = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['4']]
+            four_weak_resists = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["4"]
+            ]
 
         if "0.5" in response:
-            half_strong_resists = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['0.5']]
+            half_strong_resists = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["0.5"]
+            ]
 
         if "0.25" in response:
-            quarter_strong_resists = [get_markdown_image_for_type(pokemon_type) for pokemon_type in response['0.25']]
+            quarter_strong_resists = [
+                get_markdown_image_for_type(pokemon_type)
+                for pokemon_type in response["0.25"]
+            ]
 
         doc.add_header("Defenses", 2)
         doc.add_table(
-            ["Immune x0", "Resistant ×¼", "Resistant ×½", "Normal ×1", "Weak ×2", "Weak ×4"],
+            [
+                "Immune x0",
+                "Resistant ×¼",
+                "Resistant ×½",
+                "Normal ×1",
+                "Weak ×2",
+                "Weak ×4",
+            ],
             [
                 [
                     "<br/>".join(map(str, immunities)),
@@ -118,9 +160,9 @@ class Pokemon:
                     "<br/>".join(map(str, half_strong_resists)),
                     "<br/>".join(map(str, normal_resists)),
                     "<br/>".join(map(str, two_weak_resists)),
-                    "<br/>".join(map(str, four_weak_resists))
+                    "<br/>".join(map(str, four_weak_resists)),
                 ]
-            ]
+            ],
         )
         return
 
@@ -130,10 +172,7 @@ class Pokemon:
 
         doc.add_header("Abilities", 2)
         doc.add_table(
-            ["Version", "Ability"],
-            [
-                ["All", " / ".join(map(str, abilities))]
-            ]
+            ["Version", "Ability"], [["All", " / ".join(map(str, abilities))]]
         )
 
     def create_stats_table(self, doc: Document):
@@ -153,9 +192,9 @@ class Pokemon:
                     data.stats.sp_attack,
                     data.stats.sp_defense,
                     data.stats.speed,
-                    base_stat_total
+                    base_stat_total,
                 ]
-            ]
+            ],
         )
 
     def create_evolution_note(self, doc: Document):
@@ -171,10 +210,10 @@ class Pokemon:
         data = self.pokemon_data
         moves = {}
 
-        with open(f"temp/moves.json", encoding='utf-8') as moves_file:
+        with open(f"temp/moves.json", encoding="utf-8") as moves_file:
             file_moves = json.load(moves_file)
             moves_file.close()
-        
+
         for move_name, details in data.moves.__root__.items():
             if details.learn_method != "level-up":
                 continue
@@ -182,15 +221,24 @@ class Pokemon:
                 continue
 
             relevant_past_value = [
-                value for value in file_moves[move_name]["past_values"] if
-                value["version_group"]["name"] == version_group
+                value
+                for value in file_moves[move_name]["past_values"]
+                if value["version_group"]["name"] == version_group
             ]
             if len(relevant_past_value) > 0:
-                file_moves[move_name]["accuracy"] = relevant_past_value[0]["accuracy"] or file_moves[move_name][
-                    "accuracy"]
-                file_moves[move_name]["power"] = relevant_past_value[0]["power"] or file_moves[move_name]["power"]
-                file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
-                file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+                file_moves[move_name]["accuracy"] = (
+                    relevant_past_value[0]["accuracy"]
+                    or file_moves[move_name]["accuracy"]
+                )
+                file_moves[move_name]["power"] = (
+                    relevant_past_value[0]["power"] or file_moves[move_name]["power"]
+                )
+                file_moves[move_name]["pp"] = (
+                    relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
+                )
+                file_moves[move_name]["type"] = (
+                    relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+                )
 
             move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
             moves[move_name] = {
@@ -202,23 +250,25 @@ class Pokemon:
                 "damage_class": move_data.damage_class,
             }
 
-        sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["level_learned"], reverse=False))
+        sorted_moves = dict(
+            sorted(moves.items(), key=lambda x: x[1]["level_learned"], reverse=False)
+        )
 
         doc.add_header("Level Up Moves", 2)
         doc.add_table(
             ["Level", "Name", "Power", "Accuracy", "PP", "Type", "Damage Class"],
-            generate_moves_array(sorted_moves, table_type="level_up")
+            generate_moves_array(sorted_moves, table_type="level_up"),
         )
 
     def create_learnable_moves(self, doc: Document, version_group: str):
         data = self.pokemon_data
         moves = {}
 
-        with open("temp/machines.json", encoding='utf-8') as machines_file:
+        with open("temp/machines.json", encoding="utf-8") as machines_file:
             machines = json.load(machines_file)
             machines_file.close()
 
-        with open(f"temp/moves.json", encoding='utf-8') as moves_file:
+        with open(f"temp/moves.json", encoding="utf-8") as moves_file:
             file_moves = json.load(moves_file)
             moves_file.close()
 
@@ -238,15 +288,24 @@ class Pokemon:
                 continue
 
             relevant_past_value = [
-                value for value in file_moves[move_name]["past_values"] if
-                value["version_group"]["name"] == version_group
+                value
+                for value in file_moves[move_name]["past_values"]
+                if value["version_group"]["name"] == version_group
             ]
             if len(relevant_past_value) > 0:
-                file_moves[move_name]["accuracy"] = relevant_past_value[0]["accuracy"] or file_moves[move_name][
-                    "accuracy"]
-                file_moves[move_name]["power"] = relevant_past_value[0]["power"] or file_moves[move_name]["power"]
-                file_moves[move_name]["pp"] = relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
-                file_moves[move_name]["type"] = relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+                file_moves[move_name]["accuracy"] = (
+                    relevant_past_value[0]["accuracy"]
+                    or file_moves[move_name]["accuracy"]
+                )
+                file_moves[move_name]["power"] = (
+                    relevant_past_value[0]["power"] or file_moves[move_name]["power"]
+                )
+                file_moves[move_name]["pp"] = (
+                    relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
+                )
+                file_moves[move_name]["type"] = (
+                    relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+                )
 
             move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
             moves[move_name] = {
@@ -258,19 +317,25 @@ class Pokemon:
                 "damage_class": move_data.damage_class,
             }
 
-        sorted_moves = dict(sorted(moves.items(), key=lambda x: x[1]["machine"], reverse=False))
+        sorted_moves = dict(
+            sorted(moves.items(), key=lambda x: x[1]["machine"], reverse=False)
+        )
 
         doc.add_header("Learnable Moves", 2)
         doc.add_table(
             ["Machine", "Name", "Power", "Accuracy", "PP", "Type", "Damage Class"],
-            generate_moves_array(sorted_moves, table_type="learnable")
+            generate_moves_array(sorted_moves, table_type="learnable"),
         )
 
 
-def main(range_start: int = 1, range_end: int = 650):
+def main(wiki_name: str, range_start: int = 1, range_end: int = 650):
     pokemon_range = range(range_start, range_end + 1)
 
-    navigation_items_file = open("temp/new_navigation_items.txt", 'w')
+    with open(f"dist/{wiki_name}/mkdocs.yml", "r") as mkdocs_file:
+        mkdocs_yaml_dict = yaml.load(mkdocs_file, Loader=yaml.FullLoader)
+        mkdocs_file.close()
+
+    specifc_changes = mkdocs_yaml_dict["nav"][1]["Pokemon"][0]["Specific Changes"]
 
     for pokedex_number in tqdm.tqdm(pokemon_range):
         pokemon_name = pokebase.pokemon(pokedex_number).name
@@ -279,7 +344,7 @@ def main(range_start: int = 1, range_end: int = 650):
 
         pokedex_markdown_file_name = get_markdown_file_name(pokedex_number)
 
-        markdown_file_path = f"docs/pokemons/"
+        markdown_file_path = f"dist/{wiki_name}/docs/pokemon/"
 
         doc = Document(pokedex_markdown_file_name)
 
@@ -296,21 +361,37 @@ def main(range_start: int = 1, range_end: int = 650):
 
         doc.output_page(markdown_file_path)
 
-        navigation_items_file.write(
-            f"- {pokedex_markdown_file_name} - {pokemon_data.name.title()}:"
-            f" pokemons/{pokedex_markdown_file_name}.md \n"
-        )
+        specific_change_entry = {
+            f"{pokedex_markdown_file_name} - {pokemon_data.name.title()}": f"pokemon/{pokedex_markdown_file_name}.md"
+        }
 
-    navigation_items_file.close()
+        if specific_change_entry not in specifc_changes:
+            specifc_changes.append(specific_change_entry)
+
+    sorted_specific_changes = sorted(specifc_changes, key=lambda x: list(x.keys())[0])
+
+    mkdocs_yaml_dict["nav"][1]["Pokemon"][0][
+        "Specific Changes"
+    ] = sorted_specific_changes
+
+    with open(f"dist/{wiki_name}/mkdocs.yml", "w") as mkdocs_file:
+        yaml.dump(mkdocs_yaml_dict, mkdocs_file, sort_keys=False, indent=4)
+        mkdocs_file.close()
 
 
 if __name__ == "__main__":
-    if "--range" in sys.argv:
-        pokemon_range_start = int(sys.argv[sys.argv.index("--range") + 1])
-        pokemon_range_end = int(sys.argv[sys.argv.index("--range") + 2])
-        main(pokemon_range_start, pokemon_range_end)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-wn", "--wiki_name", help="The name of the wiki")
+    parser.add_argument(
+        "-r",
+        "--range",
+        nargs=2,
+        help="The range of pokemon to generate (start end)",
+        type=int,
+    )
+    args = parser.parse_args()
+
+    if args.range:
+        main(args.wiki_name, args.range[0], args.range[1])
     else:
-        main()
-
-
-
+        main(args.wiki_name)
