@@ -90,7 +90,6 @@ def create_boiler_plate(wiki_name: str):
 
     mkdocs_yaml = generate_yaml(wiki_name)
 
-    # print(yaml.load(mkdocs_yaml, Loader=yaml.FullLoader))
     with open(f"{base_path}/mkdocs.yml", "w") as mkdocs_yaml_file:
         yaml.dump(mkdocs_yaml, mkdocs_yaml_file, sort_keys=False, indent=4)
         mkdocs_yaml_file.close()

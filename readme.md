@@ -7,7 +7,7 @@ This ReadMe will ser as a step-by-step guide to generating and deploying your ow
 ## Step 1 - Generate Wiki Folder
 This generates the initial folder structure with some boilerplate within the `dist/` folder.
 ```
-python generate_wiki.py [--name, -n]
+python generate_wiki.py [--name, -n] <wiki-name>
 ```
 For example: `python generate_wiki.py --name test_wiki` will generate a folder called `test_wiki/`. This will produce an `mkdocs.yml` file and a `docs/` folder containing some other boilerplate.
 
