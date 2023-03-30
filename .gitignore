@@ -8,3 +8,4 @@ pyvenv.cfg
 .idea
 venv
 dist
+.vscode
