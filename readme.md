@@ -30,14 +30,13 @@ python prepare_large_data.py --moves --machines
 ```
 
 ### Sprites
-Command will download current pokemon sprites up to the specified range. The sprites will be downloaded to the `/docs/img/pokemon` folder.
+Command will download current pokemon sprites. The sprites will be downloaded to the `<wiki_name>/docs/img/pokemon` folder.
 
 **NB: Only do this after gathering all pokemon data.**
 This depends on the pokemon.json file to quickly grab the sprite url
 ```
-python prepare_large_data.py --sprites [--range, -r] <range_start> <range_end>
+python prepare_large_data.py --sprites [--wiki_name, -wn] <wiki_name>
 ```
-Usage is the same as Pokemon section above
 
 ## Step 3 - Data Modification
 Naturally, since this is for rom hacks, data for pokemon, moves, routes, encounter, etc. are be modifiable.

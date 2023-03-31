@@ -17,6 +17,7 @@ from models.pokemon_models import (
     MoveData,
     MoveDetails,
 )
+from pydantic import ValidationError
 
 
 def get_markdown_image_for_type(_type: str):
@@ -236,11 +237,25 @@ class Pokemon:
                 file_moves[move_name]["pp"] = (
                     relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
                 )
-                file_moves[move_name]["type"] = (
-                    relevant_past_value[0]["type"] or file_moves[move_name]["type"]
-                )
+                # special case for curse
+                if move_name == "curse":
+                    file_moves[move_name]["type"] = "ghost"
+                else:
+                    past_type = (
+                        relevant_past_value[0]["type"]["name"]
+                        if relevant_past_value[0]["type"]
+                        else None
+                    )
+                    file_moves[move_name]["type"] = (
+                        past_type or file_moves[move_name]["type"]
+                    )
 
-            move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
+            try:
+                move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
+            except ValidationError as err:
+                print(f"Error parsing move {move_name} for {data.name}: {err}")
+                continue
+
             moves[move_name] = {
                 "level_learned": details.level_learned_at,
                 "power": move_data.power,
@@ -303,11 +318,21 @@ class Pokemon:
                 file_moves[move_name]["pp"] = (
                     relevant_past_value[0]["power"] or file_moves[move_name]["pp"]
                 )
+                past_type = (
+                    relevant_past_value[0]["type"]["name"]
+                    if relevant_past_value[0]["type"]
+                    else None
+                )
                 file_moves[move_name]["type"] = (
-                    relevant_past_value[0]["type"] or file_moves[move_name]["type"]
+                    past_type or file_moves[move_name]["type"]
                 )
 
-            move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
+            try:
+                move_data = MoveDetails.parse_raw(json.dumps(file_moves[move_name]))
+            except ValidationError as err:
+                print(f"Error parsing move {move_name} for {data.name}: {err}")
+                continue
+
             moves[move_name] = {
                 "machine": machine_name.upper(),
                 "power": move_data.power,

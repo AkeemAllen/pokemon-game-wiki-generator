@@ -124,16 +124,12 @@ def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int =
     fh.close()
 
 
-def download_pokemon_sprites(
-    wiki_name: str, pokemon_range_start: int = 1, pokemon_range_end: int = 650
-):
+def download_pokemon_sprites(wiki_name: str):
     with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
         all_downloaded_pokemon = json.load(pokemon_file)
         pokemon_file.close()
 
-    pokemon_range = range(pokemon_range_start, pokemon_range_end + 1)
-
-    for _, pokemon_data in all_downloaded_pokemon.items():
+    for _, pokemon_data in tqdm.tqdm(all_downloaded_pokemon.items()):
         image_file_name = get_markdown_file_name(pokemon_data["id"])
         if isfile(f"dist/{wiki_name}/docs/img/pokemon/{image_file_name}.png"):
             continue
@@ -220,10 +216,7 @@ if __name__ == "__main__":
             download_pokemon_data()
 
     if args.sprites:
-        if args.range:
-            download_pokemon_sprites(args.wiki_name, args.range[0], args.range[1])
-        else:
-            download_pokemon_sprites(args.wiki_name)
+        download_pokemon_sprites(args.wiki_name)
 
     if args.machines:
         prepare_technical_and_hidden_machines_data()
