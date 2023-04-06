@@ -28,13 +28,9 @@ def matchupForPair(generation, defense_type, offense_type):
 
 
 def matchupFor(generation, defense_types, offense_type):
-    # print(defense_types)
     filtered_defense_types = filter(lambda defense_type: defense_type != offense_type, defense_types)
-    # print(list(filtered_defense_types))
     mapped_defense_types = map(lambda defense_type: matchupForPair(generation, defense_type, offense_type), filtered_defense_types)
-    stuff = reduce(lambda x, y: x * y, mapped_defense_types, 1)
-    # print(stuff)
-    return stuff
+    return reduce(lambda x, y: x * y, mapped_defense_types, 1)
 
 
 def generate_defensive_matchups(generation, defense_types, pokemon_type):
@@ -47,7 +43,6 @@ def defensive_matchups(generation: int, defense_types: list):
         lambda pokemon_type: generate_defensive_matchups(generation, defense_types, pokemon_type),
         pokemon_types
     )
-    # print(list(matchups))
     return matchups
 
 
