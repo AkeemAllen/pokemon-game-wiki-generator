@@ -100,7 +100,9 @@ class Pokemon:
         types = [_type for _type in data.types]
         query_string = f"{types[0]}+{types[1]}" if len(types) > 1 else f"{types[0]}"
 
-        response = requests.get(f"http://localhost:3000?types={query_string}").json()
+        response = requests.get(f"http://localhost:8081/matchups/defensive?types={query_string}").json()
+        print(response)
+        print(f"http://localhost:8081?types={query_string}")
         immunities = ""
         normal_resists = ""
         two_weak_resists = ""
