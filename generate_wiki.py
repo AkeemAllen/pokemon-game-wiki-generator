@@ -9,6 +9,7 @@ import yaml
 
 
 def generate_yaml(
+    site_name: str = "Rom Hack Wiki",
     wiki_name: str = "Rom Hack Wiki",
     wiki_description: str = "Rom Hack Documentation",
     wiki_author: str = "Rom Hackers",
@@ -16,7 +17,7 @@ def generate_yaml(
     site_url: str = "https://placeholder.com",
 ):
     mkdocs_yaml_dict = {
-        "site_name": f"{wiki_name}",
+        "site_name": f"{site_name}",
         "site_url": f"{site_url}",
         "site_description": f"{wiki_description}",
         "site_author": f"{wiki_author}",
@@ -46,11 +47,12 @@ def generate_yaml(
         "nav": [
             {"Home": "index.md"},
             {
-                "Pokémons": [
+                "Pokemon": [
+                    {"Specific Changes": [{"placeholder: placeholder.md"}]},
                     {"Evolution Changes": "pokemons/evolution_changes.md"},
-                    {"Specific Changes": [{"001 - Bulbasaur": "pokemons/001.md"}]},
-                ]
+                ],
             },
+            {"Routes": [{"placeholder": "placeholder.md"}]},
         ],
         "plugins": [{"search": {"lang": "en"}}],
     }
@@ -58,7 +60,9 @@ def generate_yaml(
     return mkdocs_yaml_dict
 
 
-def create_boiler_plate(wiki_name: str):
+def create_boiler_plate(
+    wiki_name: str, wiki_description: str, wiki_author: str, site_name: str
+):
     base_path = f"dist/{wiki_name}"
 
     if os.path.exists(base_path):
@@ -72,6 +76,9 @@ def create_boiler_plate(wiki_name: str):
 
     # pokemon folder
     os.makedirs(f"{base_path}/docs/pokemon")
+
+    # routes folder
+    os.makedirs(f"{base_path}/docs/routes")
 
     with open(f"{base_path}/docs/index.md", "w") as markdown_index_file:
         markdown_index_file.write("# Index")
@@ -88,7 +95,12 @@ def create_boiler_plate(wiki_name: str):
         config_file.write(json.dumps(config))
         config_file.close()
 
-    mkdocs_yaml = generate_yaml(wiki_name)
+    repo_url = f"https://github.com/{wiki_author}/{wiki_name}"
+    site_url = f"https://{wiki_author.lower()}.github.io/{wiki_name}"
+
+    mkdocs_yaml = generate_yaml(
+        site_name, wiki_name, wiki_description, wiki_author, repo_url, site_url
+    )
 
     with open(f"{base_path}/mkdocs.yml", "w") as mkdocs_yaml_file:
         yaml.dump(mkdocs_yaml, mkdocs_yaml_file, sort_keys=False, indent=4)
@@ -98,10 +110,17 @@ def create_boiler_plate(wiki_name: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", help="Name of wiki")
+    parser.add_argument("-d", "--description", help="Description of wiki")
+    parser.add_argument(
+        "-a",
+        "--author",
+        help="Author of wiki (use your github username so site generation can be more accurate)",
+    )
+    parser.add_argument("-s", "--site-name", help="Site name of wiki")
 
     args = parser.parse_args()
 
-    create_boiler_plate(args.name)
+    create_boiler_plate(args.name, args.description, args.author, args.site_name)
 
 
 if __name__ == "__main__":

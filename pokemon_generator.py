@@ -1,37 +1,21 @@
 import json
-from collections import defaultdict
-import sys
 import yaml
 import argparse
 import pokebase
-from genericpath import isfile
 import requests
 import tqdm
 from snakemd import Document, InlineText, Table, Paragraph
-from enum import Enum
 from models.pokemon_models import (
     PokemonData,
-    PokemonVersions,
-    pokemon_versions_ordered,
-    Stats,
-    MoveData,
     MoveDetails,
 )
 from pydantic import ValidationError
 
+from utils import get_pokemon_dex_formatted_name
+
 
 def get_markdown_image_for_type(_type: str):
     return f"![{_type}](../img/types/{_type}.png)"
-
-
-def get_markdown_file_name(pokedex_number):
-    file_name = f"00{pokedex_number}"
-    if pokedex_number > 9:
-        file_name = f"0{pokedex_number}"
-    if pokedex_number > 99:
-        file_name = f"{pokedex_number}"
-
-    return file_name
 
 
 def generate_moves_array(moves, table_type):
@@ -76,7 +60,7 @@ class Pokemon:
                 [
                     InlineText(
                         f"{self.pokemon_data.name}",
-                        url=f"../img/pokemon/{get_markdown_file_name(self.dex_number)}.png",
+                        url=f"../img/pokemon/{get_pokemon_dex_formatted_name(self.dex_number)}.png",
                         image=True,
                     )
                 ]
@@ -100,7 +84,9 @@ class Pokemon:
         types = [_type for _type in data.types]
         query_string = f"{types[0]}+{types[1]}" if len(types) > 1 else f"{types[0]}"
 
-        response = requests.get(f"http://localhost:8081/matchups/defensive?types={query_string}").json()
+        response = requests.get(
+            f"http://localhost:8081/matchups/defensive?types={query_string}"
+        ).json()
         print(response)
         print(f"http://localhost:8081?types={query_string}")
         immunities = ""
@@ -369,7 +355,7 @@ def main(wiki_name: str, range_start: int = 1, range_end: int = 650):
         pokemon = Pokemon(pokemon_name)
         pokemon_data = pokemon.get_pokemon_data()
 
-        pokedex_markdown_file_name = get_markdown_file_name(pokedex_number)
+        pokedex_markdown_file_name = get_pokemon_dex_formatted_name(pokedex_number)
 
         markdown_file_path = f"dist/{wiki_name}/docs/pokemon/"
 

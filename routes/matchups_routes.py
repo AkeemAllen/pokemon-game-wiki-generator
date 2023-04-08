@@ -1,4 +1,3 @@
-import sys
 from fastapi import APIRouter
 from models.matchup_models import POKEMON_TYPES, pokemon_types, gen_default
 from functools import reduce
@@ -60,7 +59,6 @@ async def get_defensive_matchups(types: str):
     matchups = list(defensive_matchups(1, type_array))
 
     matchups_by_effectiveness = {}
-
     for effectiveness in effectiveness_levels:
         grouped_matchups = group_matchups_by_effectiveness(matchups, effectiveness)
         matchups_by_effectiveness[effectiveness] = list(grouped_matchups) 
@@ -69,4 +67,5 @@ async def get_defensive_matchups(types: str):
     for key, value in matchups_by_effectiveness.items():
         if len(value) != 0:
             filtered_matchups_by_effectiveness[key] = value
+
     return filtered_matchups_by_effectiveness
