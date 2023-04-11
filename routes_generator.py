@@ -40,13 +40,13 @@ def get_encounter_table_columns(max_pokemon_on_single_route):
     return table_columns
 
 
-def map_encounter_to_markdown(encounter_list):
-    encounter_list_markdown = map(
-        lambda encounter: f"{get_markdown_image_for_pokemon(encounter[0])}<br/>{get_link_to_pokemon_page(encounter[0])}<br/>{encounter[1]}%",
-        encounter_list,
+def map_pokemon_to_markdown(pokemon, is_trainer_mapping=False):
+    pokemon_list_markdown = map(
+        lambda pokemon: f"{get_markdown_image_for_pokemon(pokemon[0])}<br/>{get_link_to_pokemon_page(pokemon[0])}<br/>{is_trainer_mapping and 'lv. ' or ''}{pokemon[1]}{not is_trainer_mapping and '%' or ''}",
+        pokemon,
     )
-    encounter_list_markdown = list(encounter_list_markdown)
-    return encounter_list_markdown
+    pokemon_list_markdown = list(pokemon_list_markdown)
+    return pokemon_list_markdown
 
 
 def get_encounter_table_rows(encounters):
@@ -57,7 +57,7 @@ def get_encounter_table_rows(encounters):
         if len(pokemon_encounter_list[:-1]) > max_number_of_pokemon_on_single_route:
             max_number_of_pokemon_on_single_route = len(pokemon_encounter_list[:-1])
 
-        mapped_encounter_list = map_encounter_to_markdown(pokemon_encounter_list[:-1])
+        mapped_encounter_list = map_pokemon_to_markdown(pokemon_encounter_list[:-1])
         extra_encounter_array = []
         extra_encounter_list = []
 
@@ -98,16 +98,46 @@ def create_encounter_table(route_name: str, route_directory: str, encounters):
     doc.output_page(f"{route_directory}/")
 
 
+def get_trainer_table_columns(max_pokemon_on_single_tainer):
+    table_columns = ["Trainer", 1]
+    if max_pokemon_on_single_tainer == 1:
+        return table_columns
+
+    for i in range(max_pokemon_on_single_tainer - 1):
+        if i < 5:
+            table_columns.append(i + 2)
+    return table_columns
+
+
+def get_trainer_table_rows(trainers):
+    max_number_of_pokemon_single_trainer = 0
+    table_array_rows_for_trainers = []
+
+    for trainer_name, pokemon in trainers.items():
+        if len(pokemon) > max_number_of_pokemon_single_trainer:
+            max_number_of_pokemon_single_trainer = len(pokemon)
+
+        mapped_pokemon = map_pokemon_to_markdown(pokemon, is_trainer_mapping=True)
+
+        trainer_array = [
+            trainer_name.replace("_", " ").capitalize(),
+            *mapped_pokemon,
+        ]
+        table_array_rows_for_trainers.append(trainer_array)
+
+    return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
+
+
 def create_trainer_table(route_name: str, route_directory: str, trainers):
     doc = Document("trainers")
     doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
 
-    doc.add_table(
-        ["Trainer", "Pokemon"],
-        [
-            ["Trainer 1", "Pokemon 1"],
-        ],
+    table_rows, max_number_of_pokemon_on_single_trainer = get_trainer_table_rows(
+        trainers
     )
+    table_columns = get_trainer_table_columns(max_number_of_pokemon_on_single_trainer)
+
+    doc.add_table(table_columns, table_rows)
 
     doc.output_page(f"{route_directory}/")
 
