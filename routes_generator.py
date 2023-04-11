@@ -26,7 +26,7 @@ def get_markdown_image_for_pokemon(pokemon_name: str):
 def get_link_to_pokemon_page(pokemon_name: str):
     dex_number = pokemon[pokemon_name]["id"]
     url_route = get_pokemon_dex_formatted_name(dex_number)
-    return f"[{pokemon_name}](/pokemon/{url_route})"
+    return f"[{pokemon_name.capitalize()}](/pokemon/{url_route})"
 
 
 def get_encounter_table_columns(max_pokemon_on_single_route):
@@ -83,7 +83,7 @@ def get_encounter_table_rows(encounters):
 
 def create_encounter_table(route_name: str, route_directory: str, encounters):
     doc = Document("wild_encounters")
-    doc.add_header(f"{route_name.capitalize()}", 1)
+    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
     table_rows, max_number_of_pokemon_on_single_route = get_encounter_table_rows(
         encounters
     )
@@ -93,6 +93,20 @@ def create_encounter_table(route_name: str, route_directory: str, encounters):
     doc.add_table(
         table_columns,
         table_rows,
+    )
+
+    doc.output_page(f"{route_directory}/")
+
+
+def create_trainer_table(route_name: str, route_directory: str, trainers):
+    doc = Document("trainers")
+    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
+
+    doc.add_table(
+        ["Trainer", "Pokemon"],
+        [
+            ["Trainer 1", "Pokemon 1"],
+        ],
     )
 
     doc.output_page(f"{route_directory}/")
@@ -114,12 +128,15 @@ def main(wiki_name: str):
             os.makedirs(route_directory)
 
         create_encounter_table(
-            route_name, route_directory, route_properties["encounters"]
+            route_name, route_directory, route_properties["wild_encounters"]
         )
+
+        create_trainer_table(route_name, route_directory, route_properties["trainers"])
 
         route_entry = {
             route_name.replace("_", " ").capitalize(): [
-                {"Wild Encounters": f"routes/{route_name}/wild_encounters.md"}
+                {"Wild Encounters": f"routes/{route_name}/wild_encounters.md"},
+                {"Trainers": f"routes/{route_name}/trainers.md"},
             ]
         }
 
