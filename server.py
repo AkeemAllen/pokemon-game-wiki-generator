@@ -6,7 +6,7 @@ import json
 import pokebase
 from models.pokemon_models import PokemonChanges, PokemonData
 from models.move_models import MoveDetails
-from routes import pokemon_routes, move_routes, matchups_routes
+from routes import matchups, move, pokemon, game_route
 
 app = FastAPI()
 
@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 
-app.include_router(pokemon_routes.router)
-app.include_router(move_routes.router)
-app.include_router(matchups_routes.router)
+app.include_router(pokemon.router)
+app.include_router(move.router)
+app.include_router(matchups.router)
+app.include_router(game_route.router)
