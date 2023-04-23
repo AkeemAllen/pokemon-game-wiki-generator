@@ -1,19 +1,19 @@
 from fastapi import APIRouter
 import json
 
-from models.game_route_models import RouteProperties
+from models.game_route_models import Route, RouteProperties
 
 
 router = APIRouter()
 
 
-@router.get("/game_route")
+@router.get("/game_routes")
 async def get_game_route_list():
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
         routes_file.close()
 
-    return list(routes.keys())
+    return routes
 
 
 @router.get("/game_route/{route_name}")
@@ -48,7 +48,7 @@ async def create_game_route(route_name: str, route_properties: RouteProperties):
 
 
 @router.post("/save-changes/game_route/{route_name}")
-async def save_route_changes(route_name: str, route_properties: RouteProperties):
+async def save_single_route_changes(route_name: str, route_properties: RouteProperties):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
         routes_file.close()
@@ -60,6 +60,15 @@ async def save_route_changes(route_name: str, route_properties: RouteProperties)
 
     with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
         routes_file.write(json.dumps(routes))
+        routes_file.close()
+
+    return {"message": "Route changes saved", "status": 200}
+
+
+@router.post("/save-changes/game_routes")
+async def save_route_changes(routes: Route):
+    with open(f"temp/routes.json", "w") as routes_file:
+        routes_file.write(routes.json(exclude_none=True))
         routes_file.close()
 
     return {"message": "Route changes saved", "status": 200}

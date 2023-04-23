@@ -13,7 +13,23 @@ async def get_pokemon_list():
         pokemon = json.load(pokemon_file)
         pokemon_file.close()
 
-    return list(pokemon.keys())
+    return [{"name": pokemon_name, "id": attributes["id"] } for pokemon_name, attributes in pokemon.items()]
+
+
+@router.get("/pokemon/{pokemon_name}/sprite")
+async def get_pokemon_sprite(pokemon_name: str):
+    with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
+        pokemon = json.load(pokemon_file)
+        pokemon_file.close()
+
+    if pokemon_name not in pokemon:
+        return {"message": "Pokemon not found", "status": 404}
+
+    return {
+        "sprite_url": pokemon[pokemon_name]["sprite"],
+        "message": "Success",
+        "status": 200,
+    }
 
 
 @router.get("/pokemon/{pokemon_name}")
