@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import shutil
 import pokebase
 import yaml
 from snakemd import Document
@@ -14,6 +15,7 @@ from models.game_route_models import (
 
 from utils import get_pokemon_dex_formatted_name
 
+####### Functions used throughout the script #######
 
 with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
     pokemon = json.load(pokemon_file)
@@ -73,6 +75,11 @@ def map_pokemon_entry_to_markdown(pokemon, is_trainer_mapping=False):
     return pokemon_list_markdown
 
 
+####################
+
+####### Functions used to generating encounter table #######
+
+
 def get_encounter_table_columns(max_pokemon_on_single_route):
     table_columns = ["Area", "Pokemon"]
     if max_pokemon_on_single_route == 1:
@@ -117,6 +124,31 @@ def get_encounter_table_rows(encounters: Encounters, area_levels: AreaLevels):
     )
 
 
+def create_encounter_table(
+    route_name: str, route_directory: str, encounters, area_levels
+):
+    doc = Document("wild_encounters")
+    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
+
+    table_rows, max_number_of_pokemon_on_single_route = get_encounter_table_rows(
+        encounters, area_levels
+    )
+
+    table_columns = get_encounter_table_columns(max_number_of_pokemon_on_single_route)
+
+    doc.add_table(
+        table_columns,
+        table_rows,
+    )
+
+    doc.output_page(f"{route_directory}/")
+
+
+####################
+
+####### Functions used to generating trainer table #######
+
+
 def get_trainer_table_columns(max_pokemon_on_single_tainer):
     table_columns = ["Trainer", 1]
     if max_pokemon_on_single_tainer == 1:
@@ -147,26 +179,6 @@ def get_trainer_table_rows(trainers: Trainers):
     return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
 
 
-def create_encounter_table(
-    route_name: str, route_directory: str, encounters, area_levels
-):
-    doc = Document("wild_encounters")
-    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
-
-    table_rows, max_number_of_pokemon_on_single_route = get_encounter_table_rows(
-        encounters, area_levels
-    )
-
-    table_columns = get_encounter_table_columns(max_number_of_pokemon_on_single_route)
-
-    doc.add_table(
-        table_columns,
-        table_rows,
-    )
-
-    doc.output_page(f"{route_directory}/")
-
-
 def create_trainer_table(route_name: str, route_directory: str, trainers):
     doc = Document("trainers")
     doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
@@ -181,6 +193,10 @@ def create_trainer_table(route_name: str, route_directory: str, trainers):
     doc.output_page(f"{route_directory}/")
 
 
+####################
+
+
+####### Functions used to generating important trainer table #######
 def generate_move_string(moves):
     move_string = ""
     for move in moves:
@@ -223,6 +239,9 @@ def create_important_trainer_table(
     doc.output_page(f"{route_directory}/")
 
 
+####################
+
+
 def main(wiki_name: str):
     with open(f"dist/{wiki_name}/mkdocs.yml", "r") as mkdocs_file:
         mkdocs_yaml_dict = yaml.load(mkdocs_file, Loader=yaml.FullLoader)
@@ -233,7 +252,7 @@ def main(wiki_name: str):
         routes = Route.parse_raw(json.dumps(routes))
         routes_file.close()
 
-    mkdoc_routes = mkdocs_yaml_dict["nav"][2]["Routes"]
+    mkdoc_routes = []
     for route_name, route_properties in routes.__root__.items():
         route_directory = f"dist/{wiki_name}/docs/routes/{route_name}"
         if not os.path.exists(route_directory):
@@ -269,8 +288,14 @@ def main(wiki_name: str):
             )
 
         if route_entry not in mkdoc_routes:
-            print(route_entry)
             mkdoc_routes.append(route_entry)
+
+    for path in os.listdir(f"dist/{wiki_name}/docs/routes"):
+        formatted_path_name = path.replace("_", " ").capitalize()
+        existing_routes = [key for route in mkdoc_routes for key in route.keys()]
+
+        if formatted_path_name not in existing_routes:
+            shutil.rmtree(f"dist/{wiki_name}/docs/routes/{path}")
 
     mkdocs_yaml_dict["nav"][2]["Routes"] = mkdoc_routes
 

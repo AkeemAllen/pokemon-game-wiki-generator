@@ -48,11 +48,18 @@ def generate_yaml(
             {"Home": "index.md"},
             {
                 "Pokemon": [
-                    {"Specific Changes": [{"placeholder: placeholder.md"}]},
-                    {"Evolution Changes": "pokemons/evolution_changes.md"},
+                    {"Specific Changes": [{"Test Pokemon": "pokemon/test_pokemon.md"}]},
                 ],
             },
-            {"Routes": [{"placeholder": "placeholder.md"}]},
+            {
+                "Routes": [
+                    {
+                        "Test route": [
+                            {"Wild Encounters": "routes/Test_route/wild_encounters.md"}
+                        ]
+                    }
+                ]
+            },
         ],
         "plugins": [{"search": {"lang": "en"}}],
     }
@@ -74,11 +81,21 @@ def create_boiler_plate(
     shutil.copytree("generator_assets/types", f"{base_path}/docs/img/types")
     os.makedirs(f"{base_path}/docs/img/pokemon")
 
-    # pokemon folder
+    # pokemon folder with an placeholder pokemon file
     os.makedirs(f"{base_path}/docs/pokemon")
 
-    # routes folder
-    os.makedirs(f"{base_path}/docs/routes")
+    with open(f"{base_path}/docs/pokemon/test_pokemon.md", "w") as markdown_file:
+        markdown_file.write("# Placeholder Pokemon")
+        markdown_file.close()
+
+    # routes folder with an placeholder route folder and file
+    os.makedirs(f"{base_path}/docs/routes/Test_route")
+
+    with open(
+        f"{base_path}/docs/routes/Test_route/wild_encounters.md", "w"
+    ) as markdown_file:
+        markdown_file.write("# Wild Encounters")
+        markdown_file.close()
 
     with open(f"{base_path}/docs/index.md", "w") as markdown_index_file:
         markdown_index_file.write("# Index")
