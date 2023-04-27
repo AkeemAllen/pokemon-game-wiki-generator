@@ -4,7 +4,13 @@ import os
 import pokebase
 import yaml
 from snakemd import Document
-from models.game_route_models import Encounters, Route, TrainerOrWildPokemon, Trainers
+from models.game_route_models import (
+    AreaLevels,
+    Encounters,
+    Route,
+    TrainerOrWildPokemon,
+    Trainers,
+)
 
 from utils import get_pokemon_dex_formatted_name
 
@@ -37,7 +43,7 @@ def get_bottom_value_for_pokemon(
     if is_trainer_mapping:
         bottom_value = f"lv. {pokemon.level}"
     else:
-        bottom_value = f"{pokemon.catch_rate}%"
+        bottom_value = f"{pokemon.encounter_rate}%"
 
     return bottom_value
 
@@ -78,17 +84,15 @@ def get_encounter_table_columns(max_pokemon_on_single_route):
     return table_columns
 
 
-def get_encounter_table_rows(encounters: Encounters):
+def get_encounter_table_rows(encounters: Encounters, area_levels: AreaLevels):
     max_number_of_pokemon_on_single_route = 0
     table_array_rows_for_encounters = []
 
     for encounter_type, pokemon_encounter_list in encounters.__root__.items():
-        if len(pokemon_encounter_list[:-1]) > max_number_of_pokemon_on_single_route:
-            max_number_of_pokemon_on_single_route = len(pokemon_encounter_list[:-1])
+        if len(pokemon_encounter_list) > max_number_of_pokemon_on_single_route:
+            max_number_of_pokemon_on_single_route = len(pokemon_encounter_list)
 
-        mapped_encounter_list = map_pokemon_entry_to_markdown(
-            pokemon_encounter_list[:-1]
-        )
+        mapped_encounter_list = map_pokemon_entry_to_markdown(pokemon_encounter_list)
         extra_encounter_array = []
         extra_encounter_list = []
 
@@ -99,7 +103,7 @@ def get_encounter_table_rows(encounters: Encounters):
 
         encounter_array = [
             f"{get_markdown_image_for_item(encounter_type)}<br/>"
-            f"{encounter_type}<br/>{pokemon_encounter_list[-1].area_level}",
+            f"{encounter_type}<br/>{area_levels.__root__[encounter_type]}",
             *mapped_encounter_list,
         ]
 
@@ -143,12 +147,14 @@ def get_trainer_table_rows(trainers: Trainers):
     return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
 
 
-def create_encounter_table(route_name: str, route_directory: str, encounters):
+def create_encounter_table(
+    route_name: str, route_directory: str, encounters, area_levels
+):
     doc = Document("wild_encounters")
     doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
 
     table_rows, max_number_of_pokemon_on_single_route = get_encounter_table_rows(
-        encounters
+        encounters, area_levels
     )
 
     table_columns = get_encounter_table_columns(max_number_of_pokemon_on_single_route)
@@ -239,7 +245,10 @@ def main(wiki_name: str):
 
         if route_properties.wild_encounters:
             create_encounter_table(
-                route_name, route_directory, route_properties.wild_encounters
+                route_name,
+                route_directory,
+                route_properties.wild_encounters,
+                route_properties.wild_encounters_area_levels,
             )
             route_entry[formatted_route_name].append(
                 {"Wild Encounters": f"routes/{route_name}/wild_encounters.md"}

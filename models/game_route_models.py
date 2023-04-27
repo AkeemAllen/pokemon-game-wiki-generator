@@ -3,13 +3,14 @@ from pydantic import BaseModel
 
 
 class TrainerOrWildPokemon(BaseModel):
+    id: Optional[int]
     name: Optional[str]
     level: Optional[int]
     moves: Optional[list[str]]
     item: Optional[str]
     nature: Optional[str]
     ability: Optional[str]
-    catch_rate: Optional[int]
+    encounter_rate: Optional[int]
 
     # This is here just to capture
     # the level ranage of wild pokemon since it can
@@ -25,10 +26,15 @@ class Trainers(BaseModel):
     __root__: Dict[str, list[TrainerOrWildPokemon]]
 
 
+class AreaLevels(BaseModel):
+    __root__: Dict[str, str]
+
+
 class RouteProperties(BaseModel):
     wild_encounters: Optional[Encounters]
     trainers: Optional[Trainers]
     important_trainers: Optional[Trainers]
+    wild_encounters_area_levels: Optional[AreaLevels]
 
 
 class Route(BaseModel):
