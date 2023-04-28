@@ -2,7 +2,7 @@ from typing import Optional
 from fastapi import APIRouter
 import json
 
-from models.game_route_models import Route, RouteProperties
+from models.game_route_models import NewRouteName, Route, RouteProperties
 from utils import get_sorted_routes
 
 
@@ -29,8 +29,8 @@ async def get_game_route(route_name: str):
     return routes[route_name]
 
 
-@router.post("/game_route/{route_name}/edit_route_name/{new_route_name}")
-async def edit_game_route(route_name: str, new_route_name: str):
+@router.post("/game_route/{route_name}/edit_route_name/")
+async def edit_game_route(route_name: str, new_route_name: NewRouteName):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
         routes_file.close()
@@ -39,7 +39,7 @@ async def edit_game_route(route_name: str, new_route_name: str):
         print(routes[route_name])
         return {"message": "Route not found", "status": 404}
 
-    routes[new_route_name] = routes[route_name]
+    routes[new_route_name.new_route_name] = routes[route_name]
 
     del routes[route_name]
 

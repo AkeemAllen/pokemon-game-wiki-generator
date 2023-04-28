@@ -38,5 +38,9 @@ class RouteProperties(BaseModel):
     wild_encounters_area_levels: Optional[AreaLevels]
 
 
+class NewRouteName(BaseModel):
+    new_route_name: str
+
+
 class Route(BaseModel):
     __root__: Dict[str, RouteProperties]
