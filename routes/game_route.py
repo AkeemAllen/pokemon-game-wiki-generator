@@ -3,6 +3,7 @@ from fastapi import APIRouter
 import json
 
 from models.game_route_models import Route, RouteProperties
+from utils import get_sorted_routes
 
 
 router = APIRouter()
@@ -14,7 +15,7 @@ async def get_game_route_list():
         routes = json.load(routes_file)
         routes_file.close()
 
-    return routes
+    return get_sorted_routes(routes)
 
 
 @router.get("/game_route/{route_name}")
@@ -46,7 +47,11 @@ async def edit_game_route(route_name: str, new_route_name: str):
         routes_file.write(json.dumps(routes))
         routes_file.close()
 
-    return {"message": "Route edited", "status": 200, "routes": routes}
+    return {
+        "message": "Route edited",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
 
 
 @router.post("/game_route/{route_name}")
@@ -68,7 +73,11 @@ async def create_game_route(
         routes_file.write(json.dumps(routes))
         routes_file.close()
 
-    return {"message": "Route created", "status": 200, "routes": routes}
+    return {
+        "message": "Route created",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
 
 
 @router.patch("/save-changes/game_route/{route_name}")
@@ -86,7 +95,11 @@ async def save_single_route_changes(route_name: str, route_properties: RouteProp
         routes_file.write(json.dumps(routes))
         routes_file.close()
 
-    return {"message": "Route changes saved", "status": 200, "routes": routes}
+    return {
+        "message": "Route changes saved",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
 
 
 @router.post("/save-changes/game_routes")
@@ -113,4 +126,8 @@ async def delete_route(route_name: str):
         routes_file.write(json.dumps(routes))
         routes_file.close()
 
-    return {"message": "Route deleted", "status": 200, "routes": routes}
+    return {
+        "message": "Route deleted",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }

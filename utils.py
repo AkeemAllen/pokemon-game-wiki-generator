@@ -6,3 +6,7 @@ def get_pokemon_dex_formatted_name(pokedex_number):
         file_name = f"{pokedex_number}"
 
     return file_name
+
+
+def get_sorted_routes(routes):
+    return dict(sorted(routes.items(), key=lambda route: route[1]["position"]))
