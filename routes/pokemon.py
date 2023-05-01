@@ -7,15 +7,20 @@ from models.pokemon_models import PokemonChanges
 router = APIRouter()
 
 
+# Get all pokemon and return by dict with name and id
 @router.get("/pokemon")
 async def get_pokemon_list():
     with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
         pokemon = json.load(pokemon_file)
         pokemon_file.close()
 
-    return [{"name": pokemon_name, "id": attributes["id"] } for pokemon_name, attributes in pokemon.items()]
+    return [
+        {"name": pokemon_name, "id": attributes["id"]}
+        for pokemon_name, attributes in pokemon.items()
+    ]
 
 
+# Get sprite url for pokemon
 @router.get("/pokemon/{pokemon_name}/sprite")
 async def get_pokemon_sprite(pokemon_name: str):
     with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
@@ -32,6 +37,7 @@ async def get_pokemon_sprite(pokemon_name: str):
     }
 
 
+# Get pokemon by name
 @router.get("/pokemon/{pokemon_name}")
 async def get_pokemon(pokemon_name: str):
     with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
@@ -43,7 +49,8 @@ async def get_pokemon(pokemon_name: str):
     return pokemon[pokemon_name]
 
 
-@router.post("/save-changes/pokemon/{pokemon_name}")
+# Save Changes to pokemon
+@router.post("/pokemon/edit/{pokemon_name}")
 async def save_pokemon_changes(changes: PokemonChanges, pokemon_name: str):
     with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
         pokemon = json.load(pokemon_file)

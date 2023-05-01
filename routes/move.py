@@ -7,6 +7,7 @@ from models.move_models import MoveDetails
 router = APIRouter()
 
 
+# Get all move names, which is the key of the move dict
 @router.get("/moves")
 async def get_moves_list():
     with open(f"temp/moves.json", encoding="utf-8") as moves_file:
@@ -16,17 +17,18 @@ async def get_moves_list():
     return list(moves.keys())
 
 
+# Get move by name
 @router.get("/moves/{move_name}")
 async def get_moves(move_name: str):
     with open(f"temp/moves.json", encoding="utf-8") as moves_file:
         moves = json.load(moves_file)
         moves_file.close()
-    print(moves[move_name])
 
     return moves[move_name]
 
 
-@router.post("/save-changes/moves/{move_name}")
+# Save Changes to move
+@router.post("/moves/edit/{move_name}")
 def save_move_changes(move_details: MoveDetails, move_name: str):
     with open(f"temp/moves.json", encoding="utf-8") as moves_file:
         moves = json.load(moves_file)

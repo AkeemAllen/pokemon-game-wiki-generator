@@ -2,14 +2,15 @@ from typing import Optional
 from fastapi import APIRouter
 import json
 
-from models.game_route_models import NewRouteName, Route, RouteProperties
+from models.game_route_models import NewRoute, RouteProperties
 from utils import get_sorted_routes
 
 
 router = APIRouter()
 
 
-@router.get("/game_routes")
+# Get all routes and return them as sorted dict
+@router.get("/game-routes")
 async def get_game_route_list():
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
@@ -18,7 +19,8 @@ async def get_game_route_list():
     return get_sorted_routes(routes)
 
 
-@router.get("/game_route/{route_name}")
+# Get route by name
+@router.get("/game-route/{route_name}")
 async def get_game_route(route_name: str):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
@@ -29,45 +31,16 @@ async def get_game_route(route_name: str):
     return routes[route_name]
 
 
-@router.post("/game_route/{route_name}/edit_route_name/")
-async def edit_game_route(route_name: str, new_route_name: NewRouteName):
+@router.post("/game-route")
+async def create_game_route(new_route: NewRoute):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
         routes_file.close()
 
-    if routes[route_name] is None:
-        print(routes[route_name])
-        return {"message": "Route not found", "status": 404}
-
-    routes[new_route_name.new_route_name] = routes[route_name]
-
-    del routes[route_name]
-
-    with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
-        routes_file.write(json.dumps(routes))
-        routes_file.close()
-
-    return {
-        "message": "Route edited",
-        "status": 200,
-        "routes": get_sorted_routes(routes),
-    }
-
-
-@router.post("/game_route/{route_name}")
-async def create_game_route(
-    route_name: str, route_properties: Optional[RouteProperties]
-):
-    with open(f"temp/routes.json", encoding="utf-8") as routes_file:
-        routes = json.load(routes_file)
-        routes_file.close()
-
-    if route_name in routes:
+    if new_route.new_route_name in routes:
         return {"message": "Route already exists", "status": 400}
 
-    routes[route_name] = {}
-
-    routes[route_name] = route_properties.dict(exclude_none=True)
+    routes[new_route.new_route_name] = {"position": len(routes) + 1}
 
     with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
         routes_file.write(json.dumps(routes))
@@ -80,7 +53,33 @@ async def create_game_route(
     }
 
 
-@router.patch("/save-changes/game_route/{route_name}")
+# Edit route name
+@router.post("/game-route/edit-route-name/")
+async def edit_game_route(new_route: NewRoute):
+    with open(f"temp/routes.json", encoding="utf-8") as routes_file:
+        routes = json.load(routes_file)
+        routes_file.close()
+
+    if routes[new_route.current_route_name] is None:
+        return {"message": "Route not found", "status": 404}
+
+    routes[new_route.new_route_name] = routes[new_route.current_route_name]
+
+    del routes[new_route.current_route_name]
+
+    with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
+        routes_file.write(json.dumps(routes))
+        routes_file.close()
+
+    return {
+        "message": "Route edited",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
+
+
+# Save changes to route
+@router.patch("/game-route/edit/{route_name}")
 async def save_single_route_changes(route_name: str, route_properties: RouteProperties):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
@@ -102,16 +101,8 @@ async def save_single_route_changes(route_name: str, route_properties: RouteProp
     }
 
 
-@router.post("/save-changes/game_routes")
-async def save_route_changes(routes: Route):
-    with open(f"temp/routes.json", "w") as routes_file:
-        routes_file.write(routes.json(exclude_none=True))
-        routes_file.close()
-
-    return {"message": "Route changes saved", "status": 200}
-
-
-@router.delete("/game_route/{route_name}")
+# Delete route by name
+@router.delete("/game-route/delete/{route_name}")
 async def delete_route(route_name: str):
     with open(f"temp/routes.json", encoding="utf-8") as routes_file:
         routes = json.load(routes_file)
