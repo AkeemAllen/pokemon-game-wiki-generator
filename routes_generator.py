@@ -38,6 +38,14 @@ def get_link_to_pokemon_page(pokemon_name: str):
     return f"[{pokemon_name.capitalize()}](/pokemon/{url_route})"
 
 
+def generate_move_string(moves):
+    move_string = ""
+    for move in moves:
+        move_string += f"<li>{move.title()}</li>"
+
+    return f"<ul>{move_string}</ul>"
+
+
 def get_bottom_value_for_pokemon(
     pokemon: TrainerOrWildPokemon, is_trainer_mapping=False
 ):
@@ -77,7 +85,7 @@ def map_pokemon_entry_to_markdown(pokemon, is_trainer_mapping=False):
 
 ####################
 
-####### Functions used to generating encounter table #######
+####### Functions used to generate encounter table #######
 
 
 def get_encounter_table_columns(max_pokemon_on_single_route):
@@ -128,7 +136,7 @@ def create_encounter_table(
     route_name: str, route_directory: str, encounters, area_levels
 ):
     doc = Document("wild_encounters")
-    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
+    doc.add_header(f"{route_name.capitalize()}", 1)
 
     table_rows, max_number_of_pokemon_on_single_route = get_encounter_table_rows(
         encounters, area_levels
@@ -164,14 +172,16 @@ def get_trainer_table_rows(trainers: Trainers):
     max_number_of_pokemon_single_trainer = 0
     table_array_rows_for_trainers = []
 
-    for trainer_name, pokemon in trainers.__root__.items():
-        if len(pokemon) > max_number_of_pokemon_single_trainer:
-            max_number_of_pokemon_single_trainer = len(pokemon)
+    for trainer_name, trainer_info in trainers.__root__.items():
+        if len(trainer_info.pokemon) > max_number_of_pokemon_single_trainer:
+            max_number_of_pokemon_single_trainer = len(trainer_info.pokemon)
 
-        mapped_pokemon = map_pokemon_entry_to_markdown(pokemon, is_trainer_mapping=True)
+        mapped_pokemon = map_pokemon_entry_to_markdown(
+            trainer_info.pokemon, is_trainer_mapping=True
+        )
 
         trainer_array = [
-            trainer_name.replace("_", " ").capitalize(),
+            trainer_name.capitalize(),
             *mapped_pokemon,
         ]
         table_array_rows_for_trainers.append(trainer_array)
@@ -179,9 +189,9 @@ def get_trainer_table_rows(trainers: Trainers):
     return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
 
 
-def create_trainer_table(route_name: str, route_directory: str, trainers):
+def create_trainer_table(route_name: str, route_directory: str, trainers: Trainers):
     doc = Document("trainers")
-    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
+    doc.add_header(f"{route_name.capitalize()}", 1)
 
     table_rows, max_number_of_pokemon_on_single_trainer = get_trainer_table_rows(
         trainers
@@ -190,52 +200,26 @@ def create_trainer_table(route_name: str, route_directory: str, trainers):
 
     doc.add_table(table_columns, table_rows)
 
-    doc.output_page(f"{route_directory}/")
-
-
-####################
-
-
-####### Functions used to generating important trainer table #######
-def generate_move_string(moves):
-    move_string = ""
-    for move in moves:
-        move_string += f"<li>{move.title()}</li>"
-
-    return f"<ul>{move_string}</ul>"
-
-
-def create_important_trainer_table(
-    route_name: str, route_directory: str, trainers: Trainers
-):
-    doc = Document("important_trainers")
-    doc.add_header(f"{route_name.replace('_', ' ').capitalize()}", 1)
-
-    table_rows, max_number_of_pokemon_on_single_trainer = get_trainer_table_rows(
-        trainers
-    )
-
-    table_columns = get_trainer_table_columns(max_number_of_pokemon_on_single_trainer)
-    doc.add_table(table_columns, table_rows)
-
-    for trainer_name, trainer_pokemon in trainers.__root__.items():
-        doc.add_header(trainer_name.capitalize())
-        table_rows = []
-        for pokemon in trainer_pokemon:
-            table_rows.append(
-                [
-                    generate_pokemon_entry_markdown(pokemon, is_trainer_mapping=True),
-                    get_item_entry_markdown(pokemon.item),
-                    pokemon.nature.title(),
-                    pokemon.ability.title(),
-                    generate_move_string(pokemon.moves),
-                ]
+    for trainer_name, trainer_info in trainers.__root__.items():
+        if trainer_info.is_important:
+            doc.add_header(trainer_name.capitalize())
+            table_rows = []
+            for pokemon in trainer_info.pokemon:
+                table_rows.append(
+                    [
+                        generate_pokemon_entry_markdown(
+                            pokemon, is_trainer_mapping=True
+                        ),
+                        get_item_entry_markdown(pokemon.item),
+                        pokemon.nature.title(),
+                        pokemon.ability.title(),
+                        generate_move_string(pokemon.moves),
+                    ]
+                )
+            doc.add_table(
+                [trainer_name, "Item", "Nature", "Ability", "Moves"],
+                table_rows,
             )
-        doc.add_table(
-            [trainer_name, "Item", "Nature", "Ability", "Moves"],
-            table_rows,
-        )
-
     doc.output_page(f"{route_directory}/")
 
 
@@ -258,7 +242,7 @@ def main(wiki_name: str):
         if not os.path.exists(route_directory):
             os.makedirs(route_directory)
 
-        formatted_route_name = route_name.replace("_", " ").capitalize()
+        formatted_route_name = route_name.capitalize()
         route_entry = {}
         route_entry[formatted_route_name] = []
 
@@ -279,19 +263,11 @@ def main(wiki_name: str):
                 {"Trainers": f"routes/{route_name}/trainers.md"}
             )
 
-        if route_properties.important_trainers:
-            create_important_trainer_table(
-                route_name, route_directory, route_properties.important_trainers
-            )
-            route_entry[formatted_route_name].append(
-                {"Important Trainers": f"routes/{route_name}/important_trainers.md"}
-            )
-
         if route_entry not in mkdoc_routes:
             mkdoc_routes.append(route_entry)
 
     for path in os.listdir(f"dist/{wiki_name}/docs/routes"):
-        formatted_path_name = path.replace("_", " ").capitalize()
+        formatted_path_name = path.capitalize()
         existing_routes = [key for route in mkdoc_routes for key in route.keys()]
 
         if formatted_path_name not in existing_routes:

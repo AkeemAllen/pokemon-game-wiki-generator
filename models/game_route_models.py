@@ -12,18 +12,18 @@ class TrainerOrWildPokemon(BaseModel):
     ability: Optional[str]
     encounter_rate: Optional[int]
 
-    # This is here just to capture
-    # the level ranage of wild pokemon since it can
-    # be different for each area on the route
-    area_level: Optional[str]
-
 
 class Encounters(BaseModel):
     __root__: Dict[str, list[TrainerOrWildPokemon]]
 
 
+class TrainerInfo(BaseModel):
+    is_important: bool
+    pokemon: list[TrainerOrWildPokemon]
+
+
 class Trainers(BaseModel):
-    __root__: Dict[str, list[TrainerOrWildPokemon]]
+    __root__: Dict[str, TrainerInfo]
 
 
 class AreaLevels(BaseModel):
@@ -34,7 +34,6 @@ class RouteProperties(BaseModel):
     position: int
     wild_encounters: Optional[Encounters]
     trainers: Optional[Trainers]
-    important_trainers: Optional[Trainers]
     wild_encounters_area_levels: Optional[AreaLevels]
 
 
