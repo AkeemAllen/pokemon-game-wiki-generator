@@ -6,6 +6,7 @@ app = FastAPI()
 
 
 origins = [
+    "*",
     "http://localhost",
     "http://localhost:5173",
     "http://localhost:5173/pokemon/*",
