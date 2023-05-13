@@ -21,7 +21,6 @@ def prepare_move_data():
     move_range = range(1, 903)
     moves = {}
     for move_id in tqdm.tqdm(move_range):
-
         response = requests.get(f"https://pokeapi.co/api/v2/move/{move_id}")
         if response == "Not Found":
             continue
@@ -47,12 +46,101 @@ def prepare_move_data():
     fh.close()
 
 
+def prepare_items_data():
+    items_range = range(1, 2050)
+    items = {}
+
+    for item_id in tqdm.tqdm(items_range):
+        response = requests.get(f"https://pokeapi.co/api/v2/item/{item_id}")
+
+        if response == "Not Found":
+            continue
+
+        try:
+            item = response.json()
+        except JSONDecodeError as err:
+            print(f"Item with id {item_id} failed: {err}")
+            continue
+
+        for effect in item["effect_entries"]:
+            if effect["language"]["name"] == "en":
+                item_effect = effect["effect"]
+                break
+
+        items[item["name"]] = {
+            "effect": item_effect,
+            "sprite": item["sprites"]["default"],
+        }
+
+    fh = open(f"temp/items.json", "w")
+    fh.write(json.dumps(items))
+    fh.close()
+
+
+def prepare_ability_data():
+    ability_range = range(1, 359)
+    abilities = {}
+
+    for ability_id in tqdm.tqdm(ability_range):
+        response = requests.get(f"https://pokeapi.co/api/v2/ability/{ability_id}")
+
+        if response == "Not Found":
+            continue
+
+        try:
+            ability = response.json()
+        except JSONDecodeError as err:
+            print(f"Ability with id {ability_id} failed: {err}")
+            continue
+
+        for effect in ability["effect_entries"]:
+            if effect["language"]["name"] == "en":
+                ability_effect = effect["effect"]
+                break
+
+        abilities[ability["name"]] = {
+            "effect": ability_effect,
+        }
+
+    fh = open(f"temp/abilities.json", "w")
+    fh.write(json.dumps(abilities))
+    fh.close()
+
+
+def prepare_nature_data():
+    nature_range = range(1, 26)
+    natures = []
+
+    for nature_id in tqdm.tqdm(nature_range):
+        response = requests.get(f"https://pokeapi.co/api/v2/nature/{nature_id}")
+
+        if response == "Not Found":
+            continue
+
+        try:
+            nature = response.json()
+        except JSONDecodeError as err:
+            print(f"Nature with id {nature_id} failed: {err}")
+            continue
+
+        natures.append(nature["name"])
+
+    fh = open(f"temp/natures.json", "w")
+    fh.write(json.dumps(natures))
+    fh.close()
+
+
+def prepare_items_natures_abilities_data():
+    # prepare_items_data()
+    prepare_ability_data()
+    prepare_nature_data()
+
+
 def download_pokemon_data(pokemon_range_start: int = 1, pokemon_range_end: int = 650):
     pokedex_numbers = range(pokemon_range_start, pokemon_range_end + 1)
 
     pokemon = {}
     for dex_number in tqdm.tqdm(pokedex_numbers):
-
         response = requests.get(f"https://pokeapi.co/api/v2/pokemon/{dex_number}")
 
         if response == "Not Found":
@@ -147,7 +235,6 @@ def prepare_technical_and_hidden_machines_data():
     machine_range = range(1, 1689)
     machines = {}
     for machine_id in tqdm.tqdm(machine_range):
-
         response = requests.get(f"https://pokeapi.co/api/v2/machine/{machine_id}")
 
         if response == "Not Found":
@@ -183,6 +270,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-s", "--sprites", help="Download pokemon sprites", action="store_true"
+    )
+    parser.add_argument(
+        "-ian",
+        "--accessories",
+        help="Download items, abilities and natures data",
+        action="store_true",
     )
     parser.add_argument(
         "-tm",
@@ -223,3 +316,6 @@ if __name__ == "__main__":
 
     if args.moves:
         prepare_move_data()
+
+    if args.accessories:
+        prepare_items_natures_abilities_data()

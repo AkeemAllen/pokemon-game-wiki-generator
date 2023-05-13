@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import shutil
-import pokebase
 import yaml
 from snakemd import Document
 from models.game_route_models import (
@@ -16,7 +15,6 @@ from models.game_route_models import (
 from utils import get_pokemon_dex_formatted_name
 
 ####### Functions used throughout the script #######
-
 with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
     pokemon = json.load(pokemon_file)
     pokemon_file.close()
@@ -180,8 +178,12 @@ def get_trainer_table_rows(trainers: Trainers):
             trainer_info.pokemon, is_trainer_mapping=True
         )
 
+        table_array_trainer = trainer_name.capitalize()
+        if trainer_info.sprite_url:
+            table_array_trainer = f"{ trainer_name.capitalize() }<br/> ![{trainer_name}]({ trainer_info.sprite_url })"
+
         trainer_array = [
-            trainer_name.capitalize(),
+            table_array_trainer,
             *mapped_pokemon,
         ]
         table_array_rows_for_trainers.append(trainer_array)
@@ -216,8 +218,11 @@ def create_trainer_table(route_name: str, route_directory: str, trainers: Traine
                         generate_move_string(pokemon.moves),
                     ]
                 )
+            first_item = trainer_name.capitalize()
+            if trainer_info.sprite_url:
+                first_item = f"![{trainer_name}]({ trainer_info.sprite_url })"
             doc.add_table(
-                [trainer_name, "Item", "Nature", "Ability", "Moves"],
+                [first_item, "Item", "Nature", "Ability", "Moves"],
                 table_rows,
             )
     doc.output_page(f"{route_directory}/")

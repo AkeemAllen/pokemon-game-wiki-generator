@@ -1,12 +1,6 @@
-from typing import Dict, Optional
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.encoders import jsonable_encoder
-import json
-import pokebase
-from models.pokemon_models import PokemonChanges, PokemonData
-from models.move_models import MoveDetails
-from routes import matchups, move, pokemon, game_route
+from routes import matchups, move, pokemon, game_route, items, natures, abilities
 
 app = FastAPI()
 
@@ -30,3 +24,6 @@ app.include_router(pokemon.router)
 app.include_router(move.router)
 app.include_router(matchups.router)
 app.include_router(game_route.router)
+app.include_router(items.router)
+app.include_router(natures.router)
+app.include_router(abilities.router)
