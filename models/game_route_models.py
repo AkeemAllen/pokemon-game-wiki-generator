@@ -20,7 +20,7 @@ class Encounters(BaseModel):
 class TrainerInfo(BaseModel):
     is_important: bool
     pokemon: list[TrainerOrWildPokemon]
-    sprite_url: Optional[str]
+    sprite_name: Optional[str]
 
 
 class Trainers(BaseModel):

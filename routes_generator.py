@@ -179,8 +179,11 @@ def get_trainer_table_rows(trainers: Trainers):
         )
 
         table_array_trainer = trainer_name.capitalize()
-        if trainer_info.sprite_url:
-            table_array_trainer = f"{ trainer_name.capitalize() }<br/> ![{trainer_name}]({ trainer_info.sprite_url })"
+        if trainer_info.sprite_name:
+            sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{trainer_info.sprite_name}.png"
+            table_array_trainer = (
+                f"{ trainer_name.capitalize() }<br/> ![{trainer_name}]({ sprite_url })"
+            )
 
         trainer_array = [
             table_array_trainer,
@@ -219,8 +222,9 @@ def create_trainer_table(route_name: str, route_directory: str, trainers: Traine
                     ]
                 )
             first_item = trainer_name.capitalize()
-            if trainer_info.sprite_url:
-                first_item = f"![{trainer_name}]({ trainer_info.sprite_url })"
+            if trainer_info.sprite_name:
+                sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{trainer_info.sprite_name}.png"
+                first_item = f"![{trainer_name}]({ sprite_url })"
             doc.add_table(
                 [first_item, "Item", "Nature", "Ability", "Moves"],
                 table_rows,
