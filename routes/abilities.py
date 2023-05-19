@@ -11,6 +11,4 @@ async def get_item_list():
         abilities = json.load(abilities_file)
         abilities_file.close()
 
-    print(abilities)
-
     return [ability_name for ability_name, _ in abilities.items()]

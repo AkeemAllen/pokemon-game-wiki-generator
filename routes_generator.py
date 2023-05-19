@@ -114,9 +114,15 @@ def get_encounter_table_rows(encounters: Encounters, area_levels: AreaLevels):
             mapped_encounter_list = mapped_encounter_list[:6]
             extra_encounter_array = [f"", *extra_encounter_list]
 
+        level_for_encounter_type = ""
+        try:
+            level_for_encounter_type = f"lv. {area_levels.__root__[encounter_type]}"
+        except KeyError:
+            pass
+
         encounter_array = [
             f"{get_markdown_image_for_item(encounter_type)}<br/>"
-            f"{encounter_type}<br/>{area_levels.__root__[encounter_type]}",
+            f"{encounter_type}<br/>{level_for_encounter_type}",
             *mapped_encounter_list,
         ]
 

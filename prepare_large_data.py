@@ -259,7 +259,6 @@ def prepare_technical_and_hidden_machines_data():
     with open(f"temp/machines.json", "w") as machine_data_file:
         machine_data_file.write(json.dumps(machines))
         machine_data_file.close()
-    print(machines)
 
 
 if __name__ == "__main__":
