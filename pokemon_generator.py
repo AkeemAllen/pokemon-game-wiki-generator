@@ -87,8 +87,6 @@ class Pokemon:
         response = requests.get(
             f"http://localhost:8081/matchups/defensive?types={query_string}"
         ).json()
-        print(response)
-        print(f"http://localhost:8081?types={query_string}")
         immunities = ""
         normal_resists = ""
         two_weak_resists = ""

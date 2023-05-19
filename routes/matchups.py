@@ -4,6 +4,7 @@ from functools import reduce
 
 router = APIRouter()
 
+
 def create_matchup_map():
     matchup_map = {}
     data = gen_default
@@ -27,28 +28,41 @@ def matchupForPair(generation, defense_type, offense_type):
 
 
 def matchupFor(generation, defense_types, offense_type):
-    filtered_defense_types = filter(lambda defense_type: defense_type != offense_type, defense_types)
-    mapped_defense_types = map(lambda defense_type: matchupForPair(generation, defense_type, offense_type), filtered_defense_types)
+    filtered_defense_types = filter(
+        lambda defense_type: defense_type != POKEMON_TYPES.none, defense_types
+    )
+    mapped_defense_types = map(
+        lambda defense_type: matchupForPair(generation, defense_type, offense_type),
+        filtered_defense_types,
+    )
     return reduce(lambda x, y: x * y, mapped_defense_types, 1)
 
 
 def generate_defensive_matchups(generation, defense_types, pokemon_type):
     effectiveness = matchupFor(generation, defense_types, pokemon_type)
-    return {"generation": generation, "pokemon_type": pokemon_type, "effectiveness": effectiveness}
+    return {
+        "generation": generation,
+        "pokemon_type": pokemon_type,
+        "effectiveness": effectiveness,
+    }
 
 
 def defensive_matchups(generation: int, defense_types: list):
     matchups = map(
-        lambda pokemon_type: generate_defensive_matchups(generation, defense_types, pokemon_type),
-        pokemon_types
+        lambda pokemon_type: generate_defensive_matchups(
+            generation, defense_types, pokemon_type
+        ),
+        pokemon_types,
     )
     return matchups
 
 
 def group_matchups_by_effectiveness(matchups, effectiveness):
-    filtered_matchups = filter(lambda matchup: matchup["effectiveness"] == effectiveness, matchups)
+    filtered_matchups = filter(
+        lambda matchup: matchup["effectiveness"] == effectiveness, matchups
+    )
     mapped_matchups = map(lambda matchup: matchup["pokemon_type"], filtered_matchups)
-    return mapped_matchups 
+    return mapped_matchups
 
 
 @router.get("/matchups/defensive")
@@ -61,7 +75,7 @@ async def get_defensive_matchups(types: str):
     matchups_by_effectiveness = {}
     for effectiveness in effectiveness_levels:
         grouped_matchups = group_matchups_by_effectiveness(matchups, effectiveness)
-        matchups_by_effectiveness[effectiveness] = list(grouped_matchups) 
+        matchups_by_effectiveness[effectiveness] = list(grouped_matchups)
 
     filtered_matchups_by_effectiveness = {}
     for key, value in matchups_by_effectiveness.items():
