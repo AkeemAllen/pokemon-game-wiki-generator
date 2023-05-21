@@ -12,6 +12,12 @@ class TrainerOrWildPokemon(BaseModel):
     ability: Optional[str]
     encounter_rate: Optional[int]
 
+    # the feature below this is shelved for now
+    # Rivals can have different teams depending on certain factors,
+    # such as the chosen starter chosen. rival_version lists which version
+    # of the rival's team this pokemon is on
+    # trainer_version: Optional[list[str]]
+
 
 class Encounters(BaseModel):
     __root__: Dict[str, list[TrainerOrWildPokemon]]
@@ -21,6 +27,10 @@ class TrainerInfo(BaseModel):
     is_important: bool
     pokemon: list[TrainerOrWildPokemon]
     sprite_name: Optional[str]
+
+    # the features below this are shelved for now
+    # has_diff_versions: Optional[bool]
+    # trainer_versions: Optional[list[str]]
 
 
 class Trainers(BaseModel):
