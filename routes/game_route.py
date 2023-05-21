@@ -122,3 +122,28 @@ async def delete_route(route_name: str):
         "status": 200,
         "routes": get_sorted_routes(routes),
     }
+
+
+@router.post("/game-route/duplicate/{route_name}/{new_route_name}")
+async def duplicate_route(route_name: str, new_route_name: str):
+    with open(f"temp/routes.json", encoding="utf-8") as routes_file:
+        routes = json.load(routes_file)
+        routes_file.close()
+
+    if route_name not in routes:
+        return {"message": "Route not found", "status": 404}
+
+    routes[new_route_name] = {
+        **routes[route_name],
+    }
+    routes[new_route_name]["position"] = len(routes)
+
+    with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
+        routes_file.write(json.dumps(routes))
+        routes_file.close()
+
+    return {
+        "message": "Route duplicated",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
