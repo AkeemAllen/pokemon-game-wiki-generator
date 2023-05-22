@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 import shutil
+from typing import Dict
+from models.game_route_models import TrainerInfo
 import yaml
 from snakemd import Document
 from models.game_route_models import (
@@ -12,63 +14,35 @@ from models.game_route_models import (
     Trainers,
 )
 
-from utils import get_pokemon_dex_formatted_name
+from utils import (
+    get_markdown_image_for_item,
+    generate_move_string,
+    get_markdown_image_for_pokemon,
+    get_bottom_value_for_pokemon,
+    get_link_to_pokemon_page,
+)
 
-####### Functions used throughout the script #######
+# region
 with open(f"temp/pokemon.json", encoding="utf-8") as pokemon_file:
     pokemon = json.load(pokemon_file)
     pokemon_file.close()
 
 
-def get_markdown_image_for_item(item_name: str):
-    return f"![{item_name}](../../img/items/{item_name}.png)"
-
-
-def get_markdown_image_for_pokemon(pokemon_name: str):
-    dex_number = pokemon[pokemon_name]["id"]
-    file_name = get_pokemon_dex_formatted_name(dex_number)
-    return f"![{pokemon_name}](../../img/pokemon/{file_name}.png)"
-
-
-def get_link_to_pokemon_page(pokemon_name: str):
-    dex_number = pokemon[pokemon_name]["id"]
-    url_route = get_pokemon_dex_formatted_name(dex_number)
-    return f"[{pokemon_name.capitalize()}](/pokemon/{url_route})"
-
-
-def generate_move_string(moves):
-    move_string = ""
-    for move in moves:
-        move_string += f"<li>{move.title()}</li>"
-
-    return f"<ul>{move_string}</ul>"
-
-
-def get_bottom_value_for_pokemon(
-    pokemon: TrainerOrWildPokemon, is_trainer_mapping=False
-):
-    bottom_value = ""
-    if is_trainer_mapping:
-        bottom_value = f"lv. {pokemon.level}"
-    else:
-        bottom_value = f"{pokemon.encounter_rate}%"
-
-    return bottom_value
-
-
 def generate_pokemon_entry_markdown(
-    pokemon: TrainerOrWildPokemon, is_trainer_mapping=False
+    trainer_or_wild_pokemon: TrainerOrWildPokemon, is_trainer_mapping=False
 ):
     pokemon_markdown = (
-        f"{get_markdown_image_for_pokemon(pokemon.name)} <br/>"
-        f"{get_link_to_pokemon_page(pokemon.name)} <br/>"
-        f"{get_bottom_value_for_pokemon(pokemon, is_trainer_mapping)}"
+        f"{get_markdown_image_for_pokemon(pokemon, trainer_or_wild_pokemon.name)} <br/>"
+        f"{get_link_to_pokemon_page(pokemon, trainer_or_wild_pokemon.name)} <br/>"
+        f"{get_bottom_value_for_pokemon(trainer_or_wild_pokemon, is_trainer_mapping)}"
     )
 
     return pokemon_markdown
 
 
 def get_item_entry_markdown(item_name):
+    if item_name == None:
+        return "?"
     return f"{get_markdown_image_for_item(item_name)} <br/> {item_name.replace('-', ' ').capitalize()}"
 
 
@@ -81,9 +55,9 @@ def map_pokemon_entry_to_markdown(pokemon, is_trainer_mapping=False):
     return pokemon_list_markdown
 
 
-####################
+# endregion
 
-####### Functions used to generate encounter table #######
+# region: Functions used to generate encounter table
 
 
 def get_encounter_table_columns(max_pokemon_on_single_route):
@@ -156,9 +130,9 @@ def create_encounter_table(
     doc.output_page(f"{route_directory}/")
 
 
-####################
+# endregion
 
-####### Functions used to generating trainer table #######
+# region: Functions used to generating trainer table
 
 
 def get_trainer_table_columns(max_pokemon_on_single_tainer):
@@ -184,11 +158,11 @@ def get_trainer_table_rows(trainers: Trainers):
             trainer_info.pokemon, is_trainer_mapping=True
         )
 
-        table_array_trainer = trainer_name.capitalize()
+        table_array_trainer = trainer_name.title()
         if trainer_info.sprite_name:
             sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{trainer_info.sprite_name}.png"
             table_array_trainer = (
-                f"{ trainer_name.capitalize() }<br/> ![{trainer_name}]({ sprite_url })"
+                f"{ trainer_name.title() }<br/> ![{trainer_name}]({ sprite_url })"
             )
 
         trainer_array = [
@@ -200,45 +174,153 @@ def get_trainer_table_rows(trainers: Trainers):
     return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
 
 
-def create_trainer_table(route_name: str, route_directory: str, trainers: Trainers):
-    doc = Document("trainers")
-    doc.add_header(f"{route_name.capitalize()}", 1)
+# def belong_to_current_version(trainer: Dict[str, TrainerInfo], version):
+#     if trainer[1].pokemon
 
+
+def create_trainer_with_diff_versions(trainers: Trainers, doc: Document):
+    for trainer_name, trainer_info in trainers.__root__.items():
+        for version in trainer_info.trainer_versions:
+            filtered_pokemon = []
+            # breakpoint()
+            doc.add_paragraph(f'=== "{version.title()}"')
+            for pokemon in trainer_info.pokemon:
+                if version in pokemon.trainer_version:
+                    filtered_pokemon.append(pokemon)
+
+            filtered_pokemon_trainer = Trainers(
+                __root__={
+                    trainer_name: TrainerInfo(
+                        trainer_versions=trainer_info.trainer_versions,
+                        is_important=trainer_info.is_important,
+                        sprite_name=trainer_info.sprite_name,
+                        pokemon=filtered_pokemon,
+                    )
+                }
+            )
+            table_row, max_number_of_pokemon_on_single_trainer = get_trainer_table_rows(
+                filtered_pokemon_trainer
+            )
+
+            table_columns = get_trainer_table_columns(
+                max_number_of_pokemon_on_single_trainer
+            )
+            doc.add_table(table_columns, table_row, indent=4)
+
+
+def create_regular_trainers(trainers: Trainers, doc: Document):
     table_rows, max_number_of_pokemon_on_single_trainer = get_trainer_table_rows(
         trainers
     )
     table_columns = get_trainer_table_columns(max_number_of_pokemon_on_single_trainer)
 
-    doc.add_table(table_columns, table_rows)
+    doc.add_table(
+        table_columns,
+        table_rows,
+    )
+
+
+def create_important_trainer_details_table(trainers: Trainers, doc: Document):
+    for trainer_name, trainer_info in trainers.__root__.items():
+        doc.add_header(trainer_name.title())
+        table_rows = []
+        for pokemon in trainer_info.pokemon:
+            table_rows.append(
+                [
+                    generate_pokemon_entry_markdown(pokemon, is_trainer_mapping=True),
+                    get_item_entry_markdown(pokemon.item),
+                    pokemon.nature.title() if pokemon.nature != None else "?",
+                    pokemon.ability.title() if pokemon.ability != None else "?",
+                    generate_move_string(pokemon.moves),
+                ]
+            )
+        first_item = trainer_name.capitalize()
+        if trainer_info.sprite_name:
+            sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{trainer_info.sprite_name}.png"
+            first_item = f"![{trainer_name}]({ sprite_url })"
+        doc.add_table(
+            [first_item, "Item", "Nature", "Ability", "Moves"],
+            table_rows,
+        )
+
+
+def create_trainer_table(route_name: str, route_directory: str, trainers: Trainers):
+    doc = Document("trainers")
+    doc.add_header(f"{route_name.capitalize()}", 1)
+
+    regular_trainers = {}
+    trainers_with_diff_versions = {}
+    important_trainers_without_diff_versions = {}
 
     for trainer_name, trainer_info in trainers.__root__.items():
-        if trainer_info.is_important:
-            doc.add_header(trainer_name.capitalize())
-            table_rows = []
+        if trainer_info.is_important and (
+            trainer_info.trainer_versions is None or trainer_info.trainer_versions == []
+        ):
+            important_trainers_without_diff_versions[trainer_name] = trainer_info
+
+        if trainer_info.trainer_versions is None or trainer_info.trainer_versions == []:
+            regular_trainers[trainer_name] = trainer_info
+        elif (
+            trainer_info.trainer_versions is not None
+            and trainer_info.trainer_versions != []
+        ):
+            trainers_with_diff_versions[trainer_name] = trainer_info
+
+    regular_trainers = Trainers(__root__=regular_trainers)
+    trainers_with_diff_versions = Trainers(__root__=trainers_with_diff_versions)
+    important_trainers_without_diff_versions = Trainers(
+        __root__=important_trainers_without_diff_versions
+    )
+
+    create_regular_trainers(regular_trainers, doc)
+
+    create_trainer_with_diff_versions(trainers_with_diff_versions, doc)
+
+    create_important_trainer_details_table(
+        important_trainers_without_diff_versions, doc
+    )
+
+    for trainer_name, trainer_info in trainers_with_diff_versions.__root__.items():
+        doc.add_header(trainer_name.title())
+        for version in trainer_info.trainer_versions:
+            filtered_pokemon = []
+            doc.add_paragraph(f'=== "{version.title()}"')
             for pokemon in trainer_info.pokemon:
+                if version in pokemon.trainer_version:
+                    filtered_pokemon.append(pokemon)
+
+            filtered_trainer_info = TrainerInfo(
+                trainer_versions=trainer_info.trainer_versions,
+                is_important=trainer_info.is_important,
+                sprite_name=trainer_info.sprite_name,
+                pokemon=filtered_pokemon,
+            )
+            table_rows = []
+            for pokemon in filtered_trainer_info.pokemon:
                 table_rows.append(
                     [
                         generate_pokemon_entry_markdown(
                             pokemon, is_trainer_mapping=True
                         ),
                         get_item_entry_markdown(pokemon.item),
-                        pokemon.nature.title(),
-                        pokemon.ability.title(),
+                        pokemon.nature.title() if pokemon.nature != None else "?",
+                        pokemon.ability.title() if pokemon.ability != None else "?",
                         generate_move_string(pokemon.moves),
                     ]
                 )
             first_item = trainer_name.capitalize()
-            if trainer_info.sprite_name:
-                sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{trainer_info.sprite_name}.png"
+            if filtered_trainer_info.sprite_name:
+                sprite_url = f"https://play.pokemonshowdown.com/sprites/trainers/{filtered_trainer_info.sprite_name}.png"
                 first_item = f"![{trainer_name}]({ sprite_url })"
             doc.add_table(
                 [first_item, "Item", "Nature", "Ability", "Moves"],
                 table_rows,
+                indent=4,
             )
     doc.output_page(f"{route_directory}/")
 
 
-####################
+# endregion
 
 
 def main(wiki_name: str):
@@ -251,8 +333,10 @@ def main(wiki_name: str):
         routes = Route.parse_raw(json.dumps(routes))
         routes_file.close()
 
+    sorted_routes = sorted(routes.__root__.items(), key=lambda route: route[1].position)
+
     mkdoc_routes = []
-    for route_name, route_properties in routes.__root__.items():
+    for route_name, route_properties in sorted_routes:
         route_directory = f"dist/{wiki_name}/docs/routes/{route_name}"
         if not os.path.exists(route_directory):
             os.makedirs(route_directory)
@@ -290,9 +374,9 @@ def main(wiki_name: str):
 
     mkdocs_yaml_dict["nav"][2]["Routes"] = mkdoc_routes
 
-    with open(f"dist/{wiki_name}/mkdocs.yml", "w") as mkdocs_file:
-        yaml.dump(mkdocs_yaml_dict, mkdocs_file, sort_keys=False, indent=4)
-        mkdocs_file.close()
+    # with open(f"dist/{wiki_name}/mkdocs.yml", "w") as mkdocs_file:
+    #     yaml.dump(mkdocs_yaml_dict, mkdocs_file, sort_keys=False, indent=4)
+    #     mkdocs_file.close()
 
 
 if __name__ == "__main__":

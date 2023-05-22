@@ -16,7 +16,7 @@ class TrainerOrWildPokemon(BaseModel):
     # Rivals can have different teams depending on certain factors,
     # such as the chosen starter chosen. rival_version lists which version
     # of the rival's team this pokemon is on
-    # trainer_version: Optional[list[str]]
+    trainer_version: Optional[list[str]]
 
 
 class Encounters(BaseModel):
@@ -30,7 +30,7 @@ class TrainerInfo(BaseModel):
 
     # the features below this are shelved for now
     # has_diff_versions: Optional[bool]
-    # trainer_versions: Optional[list[str]]
+    trainer_versions: Optional[list[str]]
 
 
 class Trainers(BaseModel):
