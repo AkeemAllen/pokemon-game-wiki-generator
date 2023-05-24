@@ -62,6 +62,11 @@ def generate_yaml(
             },
         ],
         "plugins": [{"search": {"lang": "en"}}],
+        "markdown_extensions": [
+            {"pymdownx.tasklist": {"custom_checkbox": True}},
+            "pymdownx.superfences",
+            {"pymdownx.tabbed": {"alternate_style": True}},
+        ],
     }
 
     return mkdocs_yaml_dict

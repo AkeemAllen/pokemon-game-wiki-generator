@@ -41,8 +41,8 @@ def generate_pokemon_entry_markdown(
 
 
 def get_item_entry_markdown(item_name):
-    if item_name == None:
-        return "?"
+    if item_name == None or item_name == "":
+        return "N/A"
     return f"{get_markdown_image_for_item(item_name)} <br/> {item_name.replace('-', ' ').capitalize()}"
 
 
@@ -174,10 +174,6 @@ def get_trainer_table_rows(trainers: Trainers):
     return (table_array_rows_for_trainers, max_number_of_pokemon_single_trainer)
 
 
-# def belong_to_current_version(trainer: Dict[str, TrainerInfo], version):
-#     if trainer[1].pokemon
-
-
 def create_trainer_with_diff_versions(trainers: Trainers, doc: Document):
     for trainer_name, trainer_info in trainers.__root__.items():
         for version in trainer_info.trainer_versions:
@@ -206,6 +202,7 @@ def create_trainer_with_diff_versions(trainers: Trainers, doc: Document):
                 max_number_of_pokemon_on_single_trainer
             )
             doc.add_table(table_columns, table_row, indent=4)
+        doc.add_paragraph("<br/>")
 
 
 def create_regular_trainers(trainers: Trainers, doc: Document):
@@ -222,15 +219,19 @@ def create_regular_trainers(trainers: Trainers, doc: Document):
 
 def create_important_trainer_details_table(trainers: Trainers, doc: Document):
     for trainer_name, trainer_info in trainers.__root__.items():
-        doc.add_header(trainer_name.title())
+        doc.add_header(trainer_name.title(), 2)
         table_rows = []
         for pokemon in trainer_info.pokemon:
             table_rows.append(
                 [
                     generate_pokemon_entry_markdown(pokemon, is_trainer_mapping=True),
                     get_item_entry_markdown(pokemon.item),
-                    pokemon.nature.title() if pokemon.nature != None else "?",
-                    pokemon.ability.title() if pokemon.ability != None else "?",
+                    pokemon.nature.title()
+                    if pokemon.nature != None and pokemon.nature != ""
+                    else "N/A",
+                    pokemon.ability.title()
+                    if pokemon.ability != None and pokemon.ability != ""
+                    else "N/A",
                     generate_move_string(pokemon.moves),
                 ]
             )
@@ -272,7 +273,8 @@ def create_trainer_table(route_name: str, route_directory: str, trainers: Traine
         __root__=important_trainers_without_diff_versions
     )
 
-    create_regular_trainers(regular_trainers, doc)
+    if len(regular_trainers.__root__) > 0:
+        create_regular_trainers(regular_trainers, doc)
 
     create_trainer_with_diff_versions(trainers_with_diff_versions, doc)
 
@@ -281,7 +283,7 @@ def create_trainer_table(route_name: str, route_directory: str, trainers: Traine
     )
 
     for trainer_name, trainer_info in trainers_with_diff_versions.__root__.items():
-        doc.add_header(trainer_name.title())
+        doc.add_header(trainer_name.title(), 2)
         for version in trainer_info.trainer_versions:
             filtered_pokemon = []
             doc.add_paragraph(f'=== "{version.title()}"')
@@ -303,8 +305,12 @@ def create_trainer_table(route_name: str, route_directory: str, trainers: Traine
                             pokemon, is_trainer_mapping=True
                         ),
                         get_item_entry_markdown(pokemon.item),
-                        pokemon.nature.title() if pokemon.nature != None else "?",
-                        pokemon.ability.title() if pokemon.ability != None else "?",
+                        pokemon.nature.title()
+                        if pokemon.nature != None and pokemon.nature != ""
+                        else "N/A",
+                        pokemon.ability.title()
+                        if pokemon.ability != None and pokemon.ability != ""
+                        else "N/A",
                         generate_move_string(pokemon.moves),
                     ]
                 )
@@ -374,9 +380,9 @@ def main(wiki_name: str):
 
     mkdocs_yaml_dict["nav"][2]["Routes"] = mkdoc_routes
 
-    # with open(f"dist/{wiki_name}/mkdocs.yml", "w") as mkdocs_file:
-    #     yaml.dump(mkdocs_yaml_dict, mkdocs_file, sort_keys=False, indent=4)
-    #     mkdocs_file.close()
+    with open(f"dist/{wiki_name}/mkdocs.yml", "w") as mkdocs_file:
+        yaml.dump(mkdocs_yaml_dict, mkdocs_file, sort_keys=False, indent=4)
+        mkdocs_file.close()
 
 
 if __name__ == "__main__":

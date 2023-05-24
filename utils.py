@@ -16,7 +16,7 @@ def get_sorted_routes(routes):
 
 
 def get_markdown_image_for_item(item_name: str):
-    if item_name == "?":
+    if item_name == "" or item_name is None:
         return ""
     return f"![{item_name}](../../img/items/{item_name}.png)"
 
@@ -35,8 +35,11 @@ def get_link_to_pokemon_page(pokemon_list, pokemon_name: str):
 
 def generate_move_string(moves):
     move_string = ""
+    if moves is None or len(moves) == 0:
+        return f"<ul><li>N/A</li><li>N/A</li><li>N/A</li><li>N/A</li></ul>"
+
     for move in moves:
-        move_string += f"<li>{move.title() if move else '?'}</li>"
+        move_string += f"<li>{move.title() if move else 'N/A'}</li>"
 
     return f"<ul>{move_string}</ul>"
 
