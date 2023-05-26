@@ -147,3 +147,23 @@ async def duplicate_route(route_name: str, new_route_name: str):
         "status": 200,
         "routes": get_sorted_routes(routes),
     }
+
+
+@router.patch("/game-route/edit-route-positions")
+async def edit_route_positions(organized_routes_list: Optional[list[str]]):
+    with open(f"temp/routes.json", encoding="utf-8") as routes_file:
+        routes = json.load(routes_file)
+        routes_file.close()
+
+    for index, name in enumerate(organized_routes_list):
+        routes[name]["position"] = index + 1
+
+    with open(f"temp/routes.json", "w", encoding="utf-8") as routes_file:
+        routes_file.write(json.dumps(routes))
+        routes_file.close()
+
+    return {
+        "message": "Route positions edited",
+        "status": 200,
+        "routes": get_sorted_routes(routes),
+    }
