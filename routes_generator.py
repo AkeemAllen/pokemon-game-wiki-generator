@@ -94,8 +94,15 @@ def get_encounter_table_rows(encounters: Encounters, area_levels: AreaLevels):
         except KeyError:
             pass
 
+        encounter_type_image = ""
+        if (
+            "legendary-encounter" not in encounter_type
+            and "special-encounter" not in encounter_type
+        ):
+            encounter_type_image = f"{get_markdown_image_for_item(encounter_type)}<br/>"
+
         encounter_array = [
-            f"{get_markdown_image_for_item(encounter_type)}<br/>"
+            f"{ encounter_type_image }"
             f"{encounter_type}<br/>{level_for_encounter_type}",
             *mapped_encounter_list,
         ]

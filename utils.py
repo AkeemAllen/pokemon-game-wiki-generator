@@ -30,7 +30,7 @@ def get_markdown_image_for_pokemon(pokemon_list, pokemon_name: str):
 def get_link_to_pokemon_page(pokemon_list, pokemon_name: str):
     dex_number = pokemon_list[pokemon_name]["id"]
     url_route = get_pokemon_dex_formatted_name(dex_number)
-    return f"[{pokemon_name.capitalize()}](/pokemon/{url_route})"
+    return f"[{pokemon_name.capitalize()}](/blaze-black-wiki/pokemon/{url_route})"
 
 
 def generate_move_string(moves):
